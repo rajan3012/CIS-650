@@ -36,6 +36,7 @@ class MQTT_data:
         self.qos = 0
         self.state = States.active
         self.active = False
+        self.leader = None
 
 ##############################################
 ## MQTT callbacks
@@ -66,6 +67,68 @@ def on_will(client, userdata, msg):
 def on_message(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
     print('unfiltered message')
+
+#Active state waiting for send_id or send_leader
+def on_active(client, userdata, msg):
+    message_name, uid = msg.payload.split(':')
+
+    if message_name == 'send_id':
+        userdata.state = States.decide
+        decide(client, userdata, uid)
+    elif message_name == 'send_leader':
+        send_leader(client, userdata, uid)
+        userdata.state = States.announce
+
+def on_passive(client, userdata, msg):
+    message_name, uid = msg.payload.split(':')
+
+    if message_name == 'send_leader':
+        userdata.leader = uid
+        print "Accepted {} as my leader"j.format(userdata.leader)
+        working(client, userdata)
+
+def on_wait(client, userdata, msg):
+    message_name, uid = msg.payload.split(':')
+
+    if message_name == 'send_leader':
+        working(client, userdata)
+
+################################################
+## State Functions
+################################################
+def decide(client, userdata, uid):
+    print "State changed to decide"
+    userdata.state = States.decide
+
+    if uid > userdata.uid:
+        send_uid(uid)
+        passive(client, userdata)
+    elif uid == userdata.uid:
+        announce(client, userdata)
+    userdata.active == True
+    active(client, userdata)
+
+def announce(client, userdata):
+    print "State changed to announce"
+    userdata.state = States.announce
+
+def working(client, userdata):
+    print "State changed to working"
+    userdata.state = States.working
+
+def active(client, userdata):
+    print "State changed to working:{}".format(userdata.active)
+
+def passive(client, userdata):
+    print("State changed to passive")
+
+def wait(client, userdata):
+    print("State changed to wait for round trip")
+
+def send_uid(client, userdata, uid):
+
+
+def send_leader(client,userdata, uid):
 
 
 def main():
