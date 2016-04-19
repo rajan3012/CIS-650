@@ -34,6 +34,7 @@ class MQTT_data:
         self.token_topic = 'token/' + str(UID)
         self.will_message = "Dead UID: {}, upstream_UID: {} ".format(UID, upstream_UID)
         self.qos = 0
+        self.keepalive = 30
         self.state = States.active
         self.active = False
         self.leader = None
@@ -105,19 +106,21 @@ def decide(client, userdata, uid):
     print "State changed to decide"
     userdata.state = States.decide
 
-    if uid > userdata.uid:
+    if uid > userdata.UID:
         send_uid(client, userdata, uid)
         passive(client, userdata)
-    elif uid == userdata.uid:
-        print "I, {},  am the leader".format(userdata.uid)
+    elif uid == userdata.UID:
+        print "I, {},  am the leader".format(userdata.UID)
         announce(client, userdata)
+
     userdata.active == True
     active(client, userdata)
 
 def announce(client, userdata):
     print "State changed to announce"
     userdata.state = States.announce
-    send_leader(client, userdata, userdata.uid)
+    userdata.leader = userdata.UID
+    send_leader(client, userdata, userdata.UID)
     wait(client, userdata)
 
 def working(client, userdata):
@@ -131,8 +134,9 @@ def active(client, userdata):
     print "State changed to working:{}".format(userdata.active)
     userdata.state = States.active
 
+    # TODO  active should always be True, remove?
     if userdata.active == False:
-        send_uid(client, userdata, userdata.uid)
+        send_uid(client, userdata, userdata.UID)
 
     client.message_callback_remove(userdata.token_topic)
     client.message_callback_add(userdata.token_topic, on_active)
@@ -209,7 +213,7 @@ def main():
         client.message_callback_add(myMQTT.will_topic, on_will)
 
         # connect to broker
-        client.connect(myMQTT.broker, myMQTT.port, keepalive=30)
+        client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive//2))
 
         # subscribe to list of topics
         client.subscribe([(myMQTT.token_topic, myMQTT.qos),
@@ -236,11 +240,12 @@ def main():
             elif myMQTT.state == States.wait:
                 pass
             elif myMQTT.state == States.working:
+                #TODO call working functions here
                 pass
             else:
                 pass
 
-            # block for message
+            # block for message send/receive
             client.loop()
 
 
