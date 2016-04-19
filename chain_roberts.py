@@ -119,6 +119,9 @@ def working(client, userdata):
 def active(client, userdata):
     print "State changed to working:{}".format(userdata.active)
 
+    if userdata.active == False:
+        send_uid(client, userdata, userdata.uid)
+
 def passive(client, userdata):
     print("State changed to passive")
 
