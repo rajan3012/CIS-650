@@ -84,7 +84,7 @@ def on_passive(client, userdata, msg):
 
     if message_name == 'send_leader':
         userdata.leader = uid
-        print "Accepted {} as my leader"j.format(userdata.leader)
+        print "Accepted {} as my leader".format(userdata.leader)
         working(client, userdata)
     elif message_name == 'send_id':
         send_uid(client, userdata, uid)
@@ -201,7 +201,7 @@ def main():
         # setup will for client
         client.will_set(myMQTT.will_topic, myMQTT.will_message)
 
-        # setup userdata for clien
+        # setup userdata for client
         client.user_data_set(myMQTT)
 
         # callbacks
@@ -213,15 +213,16 @@ def main():
         client.message_callback_add(myMQTT.will_topic, on_will)
 
         # connect to broker
-        client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive//2))
+        client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
 
         # subscribe to list of topics
         client.subscribe([(myMQTT.token_topic, myMQTT.qos),
                           (myMQTT.will_topic, myMQTT.qos),
                           ])
+
         # initiate first publish of ID for leader election
         client.message_callback_add(myMQTT.token_topic, on_active)
-        payload = 'send_id' + myMQTT.UID
+        payload = 'send_id' + str(myMQTT.UID)
         client.publish(myMQTT.send_token_topic, payload)
         myMQTT.active = True
 
@@ -246,7 +247,7 @@ def main():
                 pass
 
             # block for message send/receive
-            client.loop()
+            client.loop(myMQTT.keepalive/2)
 
 
     except (KeyboardInterrupt):
