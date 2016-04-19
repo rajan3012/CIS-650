@@ -1,0 +1,37 @@
+const True = 1
+const False = 0
+const N = 4
+range Bool = 0..1
+range IDS = 0..3 //node ids
+
+//process variables:
+//S := false, didn't send id | true, sent id
+
+PNODE( UID=1 ) = ACTIVE[False],
+
+ACTIVE[s:Bool] = (when( s==False ) send_id[UID] -> started -> ACTIVE[True]
+                 |get_id[k:IDS] -> deciding -> DECIDE[k][s]
+                 |when( s==True ) get_leader[k:IDS] -> send_leader[k] -> WORKING[k]),
+
+DECIDE[k:IDS][s:Bool] = (when( k<UID ) drop_it -> ACTIVE[s]
+                        |when( k>UID ) send_id[k] -> go_passive -> PASSIVE
+                        |when( k==UID) i_am_leader -> ANNOUNCE),
+
+PASSIVE = (get_id[k:IDS] -> send_id[k] -> PASSIVE
+          |get_leader[k:IDS] -> send_leader[k] -> WORKING[k]),
+
+ANNOUNCE = (send_leader[UID] -> WAITFORROUNDTRIP),
+
+WAITFORROUNDTRIP = (get_leader[UID] -> all_informed -> WORKING[UID]),
+
+WORKING[k:IDS] = (do_real_work -> WORKING[k]).
+
+||RING = ( node[i:IDS]:PNODE(i) ) /
+	{node[i:IDS].send_id/node[(i+1)%4].get_id, // link nodes together into a ring
+     node[i:IDS].send_leader/node[(i+1)%4].get_leader}.
+
+// debugging asserts
+// <> := eventually reach this state
+assert  Have_leader = <>(node.[IDS].i_am_leader)
+assert Only_one_leader = []!(node[0].i_am_leader && node[1].i_am_leader)
+assert Everyone_works = forall[i:IDS] <>(node[i].do_real_work)
