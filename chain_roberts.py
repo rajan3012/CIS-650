@@ -73,11 +73,10 @@ def on_active(client, userdata, msg):
     message_name, uid = msg.payload.split(':')
 
     if message_name == 'send_id':
-        userdata.state = States.decide
         decide(client, userdata, uid)
     elif message_name == 'send_leader':
         send_leader(client, userdata, uid)
-        userdata.state = States.announce
+        working(client,userdata)
 
 def on_passive(client, userdata, msg):
     message_name, uid = msg.payload.split(':')
@@ -86,12 +85,18 @@ def on_passive(client, userdata, msg):
         userdata.leader = uid
         print "Accepted {} as my leader"j.format(userdata.leader)
         working(client, userdata)
+    elif message_name == 'send_id':
+        send_uid(client, userdata, uid)
 
 def on_wait(client, userdata, msg):
     message_name, uid = msg.payload.split(':')
 
     if message_name == 'send_leader':
+        print "Leader announce has gone full circle"
         working(client, userdata)
+
+def on_working(client, userdata, msg):
+    print "Supposed to be working but have nothing to do"
 
 ################################################
 ## State Functions
@@ -101,9 +106,10 @@ def decide(client, userdata, uid):
     userdata.state = States.decide
 
     if uid > userdata.uid:
-        send_uid(uid)
+        send_uid(client, userdata, uid)
         passive(client, userdata)
     elif uid == userdata.uid:
+        print "I, {},  am the leader".format(userdata.uid)
         announce(client, userdata)
     userdata.active == True
     active(client, userdata)
@@ -111,28 +117,51 @@ def decide(client, userdata, uid):
 def announce(client, userdata):
     print "State changed to announce"
     userdata.state = States.announce
+    send_leader(client, userdata, userdata.uid)
+    wait(client, userdata)
 
 def working(client, userdata):
     print "State changed to working"
     userdata.state = States.working
+    client.message_callback_remove(userdata.token_topic)
+    client.message_callback_add(userdata.token_topic, on_working)
+
 
 def active(client, userdata):
     print "State changed to working:{}".format(userdata.active)
+    userdata.state = States.active
 
     if userdata.active == False:
         send_uid(client, userdata, userdata.uid)
 
+    client.message_callback_remove(userdata.token_topic)
+    client.message_callback_add(userdata.token_topic, on_active)
+
 def passive(client, userdata):
     print("State changed to passive")
+    userdata.state = States.passive
+
+    client.message_callback_remove(userdata.token_topic)
+    client.message_callback_add(userdata.token_topic, on_passive)
 
 def wait(client, userdata):
     print("State changed to wait for round trip")
+    userdata.state = States.wait
+
+    client.message_callback_remove(userdata.token_topic)
+    client.message_callback_add(userdata.token_topic, on_wait)
+
+################################################
+## Publish functions
+################################################
 
 def send_uid(client, userdata, uid):
-
+    payload = 'send_id' + uid
+    client.publish(userdata.token_topic, payload)
 
 def send_leader(client,userdata, uid):
-
+    payload = 'send_leader' + uid
+    client.publish(userdata.token_topic)
 
 def main():
     #############################################
@@ -163,10 +192,9 @@ def main():
     #############################################
     try:
         # create a client instance
-        client = mqtt.Client(str(myMQTT.UID))
+        client = mqtt.Client(str(myMQTT.UID), clean_session=True)
 
         # setup will for client
-
         client.will_set(myMQTT.will_topic, myMQTT.will_message)
 
         # setup userdata for clien
@@ -178,7 +206,6 @@ def main():
         client.on_message = on_message
 
         # callbacks for specific topics
-        client.message_callback_add(myMQTT.token_topic, on_token)
         client.message_callback_add(myMQTT.will_topic, on_will)
 
         # connect to broker
@@ -188,14 +215,34 @@ def main():
         client.subscribe([(myMQTT.token_topic, myMQTT.qos),
                           (myMQTT.will_topic, myMQTT.qos),
                           ])
+        # initiate first publish of ID for leader election
+        client.message_callback_add(myMQTT.token_topic, on_active)
+        payload = 'send_id' + myMQTT.UID
+        client.publish(myMQTT.send_token_topic, payload)
+        myMQTT.active = True
 
-        # initiate pub/sub
-        if UID == 1:
-            time.sleep(5)
-            client.publish(myMQTT.send_token_topic, myMQTT.UID)
+        # main loop
+        while(True):
 
-        # network loop
-        client.loop_forever()
+            # if elif blocks for each state
+            if myMQTT.state == States.active:
+                pass
+            elif myMQTT.state == States.announce:
+                pass
+            elif myMQTT.state == States.decide:
+                pass
+            elif myMQTT.state == States.passive:
+                pass
+            elif myMQTT.state == States.wait:
+                pass
+            elif myMQTT.state == States.working:
+                pass
+            else:
+                pass
+
+            # block for message
+            client.loop()
+
 
     except (KeyboardInterrupt):
         print "Interrupt received"
