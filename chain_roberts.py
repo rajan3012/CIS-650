@@ -226,10 +226,12 @@ def main():
                           ])
 
         # initiate first publish of ID for leader election
-        client.message_callback_add(myMQTT.token_topic, on_active)
-        print("NODE ID =",myMQTT.UID)
-        payload = 'send_id:' + str(myMQTT.UID)
-        client.publish(myMQTT.send_token_topic,payload,myMQTT.qos)
+        if myMQTT.UID ==1:
+            client.message_callback_add(myMQTT.token_topic, on_active)
+            print("NODE ID =",myMQTT.UID)
+            send_uid(client,myMQTT,myMQTT.UID)
+        #payload = 'send_id:' + str(myMQTT.UID)
+        #client.publish(myMQTT.send_token_topic,payload,myMQTT.qos)
         myMQTT.active = True
 
         # main loop
