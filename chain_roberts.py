@@ -87,7 +87,7 @@ def on_topic(client, userdata, msg):
             decide(client, userdata, uid)
         elif message_name == 'send_leader':
             send_leader(client, userdata, uid)
-            working(client,userdata)
+            working(client, userdata)
         print "exiting on_active"
 
     elif userdata.state == States.passive:
@@ -97,6 +97,7 @@ def on_topic(client, userdata, msg):
         if message_name == 'send_leader':
             userdata.leader = uid
             print "Accepted {} as my leader".format(userdata.leader)
+            send_leader(client, userdata, uid)
             working(client, userdata)
         elif message_name == 'send_id':
             send_uid(client, userdata, uid)
