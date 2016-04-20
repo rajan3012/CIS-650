@@ -74,7 +74,7 @@ def on_message(client, userdata, msg):
 
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
-    print("In active--- msg received:",msg.payload)
+    print "in active--- msg received: {}".format(msg.payload)
     print msg.payload.split(':')
     message_name, uid = parse_msg(msg.payload)
 
@@ -83,9 +83,10 @@ def on_active(client, userdata, msg):
     elif message_name == 'send_leader':
         send_leader(client, userdata, uid)
         working(client,userdata)
+    print "exiting on_active"
 
 def on_passive(client, userdata, msg):
-    print("In passive--- msg received:", msg.payload)
+    print "in passive--- msg received: {}".format(msg.payload)
     message_name, uid = parse_msg(msg.payload)
 
     if message_name == 'send_leader':
@@ -94,15 +95,16 @@ def on_passive(client, userdata, msg):
         working(client, userdata)
     elif message_name == 'send_id':
         send_uid(client, userdata, uid)
+    print "exiting on_passive"
 
 def on_wait(client, userdata, msg):
-    print("In wait--- msg received:", msg.payload)
+    print "in wait--- msg received: {}".format(msg.payload)
     message_name, uid = parse_msg(msg.payload)
 
     if message_name == 'send_leader':
         print "Leader announce has gone full circle"
         working(client, userdata)
-
+    print "exiting on_wait"
 def on_working(client, userdata, msg):
     print "Supposed to be working but have nothing to do"
 
@@ -268,8 +270,8 @@ def main():
             # block for message send/receive
             sleep(5)
             print "going into client.loop"
-            client.loop(myMQTT.keepalive//2)
-            print "client.loop timout"
+            client.loop(myMQTT.keepalive // 2)
+            print "exiting client loop"
 
     except (KeyboardInterrupt):
         print "Interrupt received"
