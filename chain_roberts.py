@@ -74,42 +74,47 @@ def on_message(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
     print('unfiltered message')
 
-#Active state waiting for send_id or send_leader
-def on_active(client, userdata, msg):
-    print "in active--- msg received: {}".format(msg.payload)
-    message_name, uid = parse_msg(msg.payload)
+# Use a single callback select by state, basically replace former call backs with elif
+def on_topic(client, userdata, msg):
 
-    if message_name == 'send_id':
-        decide(client, userdata, uid)
-    elif message_name == 'send_leader':
-        send_leader(client, userdata, uid)
-        working(client,userdata)
-    print "exiting on_active"
+    if userdata.state == States.active:
+        print "in active--- msg received: {}".format(msg.payload)
+        message_name, uid = parse_msg(msg.payload)
 
-def on_passive(client, userdata, msg):
-    print "in passive--- msg received: {}".format(msg.payload)
-    message_name, uid = parse_msg(msg.payload)
+        if message_name == 'send_id':
+            decide(client, userdata, uid)
+        elif message_name == 'send_leader':
+            send_leader(client, userdata, uid)
+            working(client,userdata)
+        print "exiting on_active"
 
-    if message_name == 'send_leader':
-        userdata.leader = uid
-        print "Accepted {} as my leader".format(userdata.leader)
-        working(client, userdata)
-    elif message_name == 'send_id':
-        send_uid(client, userdata, uid)
-    print "exiting on_passive"
+    elif userdata.state == States.passive:
+        print "in passive--- msg received: {}".format(msg.payload)
+        message_name, uid = parse_msg(msg.payload)
 
-def on_wait(client, userdata, msg):
-    print "in wait--- msg received: {}".format(msg.payload)
-    message_name, uid = parse_msg(msg.payload)
+        if message_name == 'send_leader':
+            userdata.leader = uid
+            print "Accepted {} as my leader".format(userdata.leader)
+            working(client, userdata)
+        elif message_name == 'send_id':
+            send_uid(client, userdata, uid)
+        print "exiting on_passive"
 
-    if message_name == 'send_leader':
-        print "Leader announce has gone full circle"
-        working(client, userdata)
-    print "exiting on_wait"
+    elif userdata.state == States.wait:
+        print "in wait--- msg received: {}".format(msg.payload)
+        message_name, uid = parse_msg(msg.payload)
 
-def on_working(client, userdata, msg):
-    print "Supposed to be working but have nothing to do"
-    print "exiting on_working"
+        if message_name == 'send_leader':
+            print "Leader announce has gone full circle"
+            working(client, userdata)
+        print "exiting on_wait"
+
+    elif userdata.state == States.working:
+        print "Supposed to be working but have nothing to do"
+        print "exiting on_working"
+
+    else:
+        print "ERROR: in an undefined state!"
 
 ################################################
 ## State Functions
@@ -140,9 +145,6 @@ def announce(client, userdata):
 def working(client, userdata):
     print "State changed to working"
     userdata.state = States.working
-    client.message_callback_remove(userdata.subscribe_topic)
-    client.message_callback_add(userdata.subscribe_topic, on_working)
-
 
 def active(client, userdata):
     print "State changed to active:{}".format(userdata.active)
@@ -151,25 +153,16 @@ def active(client, userdata):
     # TODO  active should always be True, remove?
     if userdata.active == False:
         send_uid(client, userdata, userdata.UID)
-    print "removing previous callback"
-    client.message_callback_remove(userdata.subscribe_topic)
-    print "installing on_active"
-    client.message_callback_add(userdata.subscribe_topic, on_active)
-    print "exiting active"
 
 def passive(client, userdata):
     print("State changed to passive")
     userdata.state = States.passive
 
-    client.message_callback_remove(userdata.subscribe_topic)
-    client.message_callback_add(userdata.subscribe_topic, on_passive)
 
 def wait(client, userdata):
     print("State changed to wait for round trip")
     userdata.state = States.wait
 
-    client.message_callback_remove(userdata.subscribe_topic)
-    client.message_callback_add(userdata.subscribe_topic, on_wait)
 
 ################################################
 ## Publish functions
@@ -235,7 +228,7 @@ def main():
 
         # callbacks for specific topics
         client.message_callback_add(myMQTT.will_topic, on_will)
-        client.message_callback_add(myMQTT.subscribe_topic, on_active)
+        client.message_callback_add(myMQTT.subscribe_topic, on_topic)
         myMQTT.active = True
 
         # connect to broker
