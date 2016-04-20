@@ -114,6 +114,7 @@ def decide(client, userdata, uid):
     userdata.state = States.decide
 
     if uid > userdata.UID:
+        print "uid={} userdata.UID={}".format(uid, userdata.UID)
         send_uid(client, userdata, uid)
         passive(client, userdata)
     elif uid == userdata.UID:
