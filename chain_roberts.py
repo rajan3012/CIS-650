@@ -40,6 +40,7 @@ class MQTT_data:
         self.state = States.active
         self.active = False
         self.leader = None
+        self.connected = False
 
 ##############################################
 ## MQTT callbacks
@@ -51,6 +52,7 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed. RC: " + str(rc))
     else:
         print("Connected successfully with result code RC: " + str(rc))
+        userdata.connected = True
 
 #Called when a published message has completed transmission to the broker
 def on_publish(client, userdata, mid):
@@ -234,6 +236,10 @@ def main():
 
         # connect to broker
         client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
+
+        # spin wait on connect until we do anything else
+        while not myMQTT.connected:
+            sleep(1)
         client.message_callback_add(myMQTT.subscribe_topic, on_active)
         myMQTT.active = True
 
