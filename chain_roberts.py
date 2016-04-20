@@ -156,6 +156,9 @@ def announce(client, userdata):
 def working(client, userdata):
     print "State changed to working"
     userdata.state = States.working
+    if userdata.leader == userdata.UID:
+        print "I'm the leader so let's get busy"
+        send_primes(client, userdata, 3, 1)
 
 def active(client, userdata):
     print "State changed to active:{}".format(userdata.active)
@@ -193,6 +196,7 @@ def send_leader(client,userdata, uid):
 
 def send_primes(client, userdata, lower_bound, count):
     payload = 'count_primes:' + str(lower_bound) + ':' + str(count)
+    print "Publishing msg {} to {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
     userdata.wait_on_publish = True
 
