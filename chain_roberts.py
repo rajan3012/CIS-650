@@ -267,6 +267,7 @@ def main():
 
             # block for message send/receive
             sleep(5)
+            print "going into client.loop"
             client.loop(myMQTT.keepalive//2)
             print "client.loop timout"
 
