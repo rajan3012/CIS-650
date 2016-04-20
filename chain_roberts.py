@@ -178,12 +178,12 @@ def wait(client, userdata):
 def send_uid(client, userdata, uid):
     payload = 'send_id:' + str(uid)
     print "Publishing msg {} on {}".format(payload,userdata.publish_topic)
-    client.publish(userdata.publish_topic, payload)
+    client.publish(userdata.publish_topic, payload,userdata.qos, True)
 
 def send_leader(client,userdata, uid):
     payload = 'send_leader:' + str(uid)
     print "Publishing msg {} to {}".format(payload,userdata.publish_topic)
-    client.publish(userdata.publish_topic, payload)
+    client.publish(userdata.publish_topic, payload, userdata.qos, True)
 
 def parse_msg(msg):
     msg_list = msg.split(':')
@@ -277,7 +277,7 @@ def main():
 
             # block for message send/receive
             print "going into client.loop"
-            client.loop(myMQTT.keepalive // 2)
+            client.loop(myMQTT.keepalive // 3)
             print "exiting client loop"
 
     except (KeyboardInterrupt):
