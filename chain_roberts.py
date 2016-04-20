@@ -76,7 +76,7 @@ def on_message(client, userdata, msg):
 def on_active(client, userdata, msg):
     print("In active--- msg received:",msg.payload)
     print msg.payload.split(':')
-    message_name, uid = tuple(msg.payload.split(':'))
+    message_name, uid = parse_msg(msg.payload)
 
     if message_name == 'send_id':
         decide(client, userdata, uid)
@@ -86,7 +86,7 @@ def on_active(client, userdata, msg):
 
 def on_passive(client, userdata, msg):
     print("In passive--- msg received:", msg.payload)
-    message_name, uid = tuple(msg.payload.split(':'))
+    message_name, uid = parse_msg(msg.payload)
 
     if message_name == 'send_leader':
         userdata.leader = uid
@@ -97,7 +97,7 @@ def on_passive(client, userdata, msg):
 
 def on_wait(client, userdata, msg):
     print("In wait--- msg received:", msg.payload)
-    message_name, uid = tuple(msg.payload.split(':'))
+    message_name, uid = parse_msg(msg.payload)
 
     if message_name == 'send_leader':
         print "Leader announce has gone full circle"
@@ -176,6 +176,12 @@ def send_leader(client,userdata, uid):
     payload = 'send_leader:' + str(uid)
     print "Sending msg {} to {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload)
+
+def parse_msg(msg):
+    msg_list = msg.split(':')
+    message_name = msg_list[0]
+    uid = int(msg_list[1])
+    return message_name, uid
 
 def main():
     #############################################
