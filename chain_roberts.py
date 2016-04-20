@@ -165,11 +165,11 @@ def wait(client, userdata):
 ################################################
 
 def send_uid(client, userdata, uid):
-    payload = 'send_id:' + uid
+    payload = 'send_id:' + str(uid)
     client.publish(userdata.token_topic, payload,userdata.qos)
 
 def send_leader(client,userdata, uid):
-    payload = 'send_leader:' + uid
+    payload = 'send_leader:' + str(uid)
     client.publish(userdata.token_topic,payload,userdata.qos)
 
 def main():
