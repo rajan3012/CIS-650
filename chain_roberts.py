@@ -127,9 +127,11 @@ def decide(client, userdata, uid):
     if uid > userdata.UID:
         send_uid(client, userdata, uid)
         passive(client, userdata)
+        return
     elif uid == userdata.UID:
         print "I, {},  am the leader".format(userdata.UID)
         announce(client, userdata)
+        return
 
     print "Going back to active"
     userdata.active == True
