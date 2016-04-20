@@ -254,6 +254,10 @@ def main():
         # initiate first publish of ID for leader election
         send_uid(client, myMQTT, myMQTT.UID)
 
+        # spin wait on publish
+        while myMQTT.wait_on_publish:
+            client.loop()
+
         # main loop
         while(True):
 
@@ -279,6 +283,7 @@ def main():
             client.loop(myMQTT.keepalive // 3)
             print "exiting client loop"
 
+            # spin wait on publish
             while myMQTT.wait_on_publish:
                 client.loop()
 
