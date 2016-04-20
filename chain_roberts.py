@@ -161,11 +161,11 @@ def wait(client, userdata):
 ################################################
 
 def send_uid(client, userdata, uid):
-    payload = 'send_id' + uid
+    payload = 'send_id:' + uid
     client.publish(userdata.token_topic, payload)
 
 def send_leader(client,userdata, uid):
-    payload = 'send_leader' + uid
+    payload = 'send_leader:' + uid
     client.publish(userdata.token_topic)
 
 def main():
@@ -223,7 +223,7 @@ def main():
 
         # initiate first publish of ID for leader election
         client.message_callback_add(myMQTT.token_topic, on_active)
-        payload = 'send_id' + str(myMQTT.UID)
+        payload = 'send_id:' + str(myMQTT.UID)
         client.publish(myMQTT.send_token_topic, payload)
         myMQTT.active = True
 
