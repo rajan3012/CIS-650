@@ -147,8 +147,8 @@ def active(client, userdata):
     if userdata.active == False:
         send_uid(client, userdata, userdata.UID)
 
-    client.message_callback_remove(userdata.subscribe_topic)
-    client.message_callback_add(userdata.subscribe_topic, on_active)
+    #client.message_callback_remove(userdata.subscribe_topic)
+    #client.message_callback_add(userdata.subscribe_topic, on_active)
 
 def passive(client, userdata):
     print("State changed to passive")
