@@ -34,7 +34,7 @@ class MQTT_data:
         self.publish_topic = 'token/' + str(UID)
         self.subscribe_topic = 'token/' + str(upstream_UID)
         self.will_message = "Dead UID: {}, upstream_UID: {} ".format(UID, upstream_UID)
-        self.qos = 0
+        self.qos = 1
         self.keepalive = 30
         self.state = States.active
         self.active = False
@@ -56,10 +56,11 @@ def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
 
 #Called when message received on token_topic
+'''
 def on_token(client, userdata, msg):
     print("Received message: "+str(msg.payload)+". On topic: "+msg.topic)
     time.sleep(2)
-    client.publish(userdata.send_token_topic, userdata.UID)
+    client.publish(userdata.send_token_topic, userdata.UID)'''
 
 #Called when message received on will_topic
 def on_will(client, userdata, msg):
@@ -72,6 +73,7 @@ def on_message(client, userdata, msg):
 
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
+    print("In active--- msg received:",msg.payload)
     print msg.payload.split(':')
     message_name, uid = tuple(msg.payload.split(':'))
 
@@ -82,6 +84,7 @@ def on_active(client, userdata, msg):
         working(client,userdata)
 
 def on_passive(client, userdata, msg):
+    print("In passive--- msg received:", msg.payload)
     message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
@@ -92,6 +95,7 @@ def on_passive(client, userdata, msg):
         send_uid(client, userdata, uid)
 
 def on_wait(client, userdata, msg):
+    print("In wait--- msg received:", msg.payload)
     message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
@@ -229,6 +233,7 @@ def main():
         myMQTT.active = True
 
         # main loop
+
         while(True):
 
             # if elif blocks for each state
