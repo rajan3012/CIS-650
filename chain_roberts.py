@@ -140,7 +140,7 @@ def working(client, userdata):
 
 
 def active(client, userdata):
-    print "State changed to working:{}".format(userdata.active)
+    print "State changed to active:{}".format(userdata.active)
     userdata.state = States.active
 
     # TODO  active should always be True, remove?
