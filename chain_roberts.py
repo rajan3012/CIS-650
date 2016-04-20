@@ -57,11 +57,11 @@ def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
 
 #Called when message received on token_topic
-'''
+
 def on_token(client, userdata, msg):
     print("Received message: "+str(msg.payload)+". On topic: "+msg.topic)
     time.sleep(2)
-    client.publish(userdata.send_token_topic, userdata.UID)'''
+    client.publish(userdata.send_token_topic, userdata.UID)
 
 #Called when message received on will_topic
 def on_will(client, userdata, msg):
@@ -233,21 +233,23 @@ def main():
 
         # connect to broker
         client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
+        client.message_callback_add(myMQTT.subscribe_topic, on_active)
+        myMQTT.active = True
+
+
+        # let connect stabilize
+        sleep(10)
 
         # subscribe to list of topics
         client.subscribe([(myMQTT.subscribe_topic, myMQTT.qos),
                           (myMQTT.will_topic, myMQTT.qos),
                           ])
 
-        sleep(10)
 
         # initiate first publish of ID for leader election
-        client.message_callback_add(myMQTT.subscribe_topic, on_active)
         send_uid(client, myMQTT, myMQTT.UID)
-        myMQTT.active = True
 
         # main loop
-
         while(True):
 
             # if elif blocks for each state
@@ -268,7 +270,6 @@ def main():
                 pass
 
             # block for message send/receive
-            sleep(5)
             print "going into client.loop"
             client.loop(myMQTT.keepalive // 2)
             print "exiting client loop"
