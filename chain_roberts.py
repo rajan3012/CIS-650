@@ -33,7 +33,7 @@ class MQTT_data:
         self.will_topic = 'will/'
         self.token_topic = 'token/' + str(UID)
         self.will_message = "Dead UID: {}, upstream_UID: {} ".format(UID, upstream_UID)
-        self.qos = 0
+        self.qos = 1
         self.keepalive = 30
         self.state = States.active
         self.active = False
@@ -71,6 +71,7 @@ def on_message(client, userdata, msg):
 
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
+    print("In active--- msg received:",msg.payload)
     print msg.payload.split(':')
     message_name, uid = tuple(msg.payload.split(':'))
 
@@ -81,6 +82,7 @@ def on_active(client, userdata, msg):
         working(client,userdata)
 
 def on_passive(client, userdata, msg):
+    print("In passive--- msg received:", msg.payload)
     message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
@@ -91,6 +93,7 @@ def on_passive(client, userdata, msg):
         send_uid(client, userdata, uid)
 
 def on_wait(client, userdata, msg):
+    print("In wait--- msg received:", msg.payload)
     message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
@@ -223,11 +226,13 @@ def main():
 
         # initiate first publish of ID for leader election
         client.message_callback_add(myMQTT.token_topic, on_active)
+        print("NODE ID =",myMQTT.UID)
         payload = 'send_id:' + str(myMQTT.UID)
         client.publish(myMQTT.send_token_topic, payload)
         myMQTT.active = True
 
         # main loop
+
         while(True):
 
             # if elif blocks for each state
