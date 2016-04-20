@@ -71,6 +71,7 @@ def on_message(client, userdata, msg):
 
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
+    print msg.payload.split(':')
     message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_id':
