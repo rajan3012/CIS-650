@@ -105,6 +105,7 @@ def on_wait(client, userdata, msg):
         print "Leader announce has gone full circle"
         working(client, userdata)
     print "exiting on_wait"
+
 def on_working(client, userdata, msg):
     print "Supposed to be working but have nothing to do"
 
@@ -172,12 +173,12 @@ def wait(client, userdata):
 
 def send_uid(client, userdata, uid):
     payload = 'send_id:' + str(uid)
-    print "Sending msg {} to {}".format(payload,userdata.publish_topic)
+    print "Publishing msg {} on {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload)
 
 def send_leader(client,userdata, uid):
     payload = 'send_leader:' + str(uid)
-    print "Sending msg {} to {}".format(payload,userdata.publish_topic)
+    print "Publishing msg {} to {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload)
 
 def parse_msg(msg):
@@ -208,7 +209,7 @@ def main():
     ## MQTT settings
     #############################################
 
-    myMQTT = MQTT_data(UID, upstream_UID)  #instance of your class
+    myMQTT = MQTT_data(UID, upstream_UID)
 
     #############################################
     ## Connect to broker and subscribe to topics
