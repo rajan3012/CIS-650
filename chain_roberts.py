@@ -76,7 +76,7 @@ def on_message(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
     print('unfiltered message')
 
-# Use a single callback select by state, basically replace former call backs with elif
+# Use a single callback select by state, basically replace former call backs with elif blocks
 def on_topic(client, userdata, msg):
 
     if userdata.state == States.active:
@@ -88,7 +88,6 @@ def on_topic(client, userdata, msg):
         elif message_name == 'send_leader':
             send_leader(client, userdata, uid)
             working(client, userdata)
-        print "exiting on_active"
 
     elif userdata.state == States.passive:
         print "in passive--- msg received: {}".format(msg.payload)
@@ -101,7 +100,6 @@ def on_topic(client, userdata, msg):
             working(client, userdata)
         elif message_name == 'send_id':
             send_uid(client, userdata, uid)
-        print "exiting on_passive"
 
     elif userdata.state == States.wait:
         print "in wait--- msg received: {}".format(msg.payload)
@@ -110,11 +108,19 @@ def on_topic(client, userdata, msg):
         if message_name == 'send_leader':
             print "Leader announce has gone full circle"
             working(client, userdata)
-        print "exiting on_wait"
 
     elif userdata.state == States.working:
-        print "Supposed to be working but have nothing to do"
-        print "exiting on_working"
+        if msg.payload.startswith('count_primes'):
+            msg_list = msg.payload.split(':')
+            lower_bound = int(msg_list[1])
+            count = int(msg_list[2])
+
+            # send message to get others started
+            send_primes(client, userdata, lower_bound + 100001, count + 1)
+
+            # start our count
+            print "counting primes {}:{}".format(lower_bound, lower_bound+100000)
+            count_primes(lower_bound, lower_bound + 100000)
 
     else:
         print "ERROR: in an undefined state!"
@@ -185,11 +191,38 @@ def send_leader(client,userdata, uid):
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
     userdata.wait_on_publish = True
 
+def send_primes(client, userdata, lower_bound, count):
+    payload = 'count_primes:' + str(lower_bound) + ':' + str(count)
+    client.publish(userdata.publish_topic, payload, userdata.qos, True)
+    userdata.wait_on_publish = True
+
+##################################################
+## Utility functions
+##################################################
 def parse_msg(msg):
     msg_list = msg.split(':')
     message_name = msg_list[0]
     uid = int(msg_list[1])
     return message_name, uid
+
+def count_primes(lower_bound, upper_bound):
+    from math import sqrt, ceil
+    from timeit import default_timer as timer
+
+    count = 0
+
+    start = timer()
+
+    for n in range(lower_bound, upper_bound):
+        upper = ceil(sqrt(n))
+        for i in range(2,upper):
+            if n % i != 0:
+                break
+            count += 1
+
+    end = timer()
+
+    print "Found {} primes between {} and {} in {}".format(count, lower_bound, upper_bound, end-start)
 
 def main():
     #############################################
