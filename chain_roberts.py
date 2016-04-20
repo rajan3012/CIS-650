@@ -71,7 +71,7 @@ def on_message(client, userdata, msg):
 
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
-    message_name, uid = msg.payload.split(':')
+    message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_id':
         decide(client, userdata, uid)
@@ -80,7 +80,7 @@ def on_active(client, userdata, msg):
         working(client,userdata)
 
 def on_passive(client, userdata, msg):
-    message_name, uid = msg.payload.split(':')
+    message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
         userdata.leader = uid
@@ -90,7 +90,7 @@ def on_passive(client, userdata, msg):
         send_uid(client, userdata, uid)
 
 def on_wait(client, userdata, msg):
-    message_name, uid = msg.payload.split(':')
+    message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
         print "Leader announce has gone full circle"
@@ -189,7 +189,7 @@ def main():
     ## MQTT settings
     #############################################
 
-    myMQTT = MQTT_data(UID, upstream_UID)
+    myMQTT = MQTT_data(UID, upstream_UID)  #instance of your class
 
     #############################################
     ## Connect to broker and subscribe to topics
