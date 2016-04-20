@@ -166,11 +166,11 @@ def wait(client, userdata):
 
 def send_uid(client, userdata, uid):
     payload = 'send_id:' + uid
-    client.publish(userdata.token_topic, payload)
+    client.publish(userdata.token_topic, payload,userdata.qos)
 
 def send_leader(client,userdata, uid):
     payload = 'send_leader:' + uid
-    client.publish(userdata.token_topic)
+    client.publish(userdata.token_topic,payload,userdata.qos)
 
 def main():
     #############################################
@@ -229,7 +229,7 @@ def main():
         client.message_callback_add(myMQTT.token_topic, on_active)
         print("NODE ID =",myMQTT.UID)
         payload = 'send_id:' + str(myMQTT.UID)
-        client.publish(myMQTT.send_token_topic, payload)
+        client.publish(myMQTT.send_token_topic,payload,myMQTT.qos)
         myMQTT.active = True
 
         # main loop
