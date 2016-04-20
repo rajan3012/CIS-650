@@ -266,6 +266,7 @@ def main():
                 pass
 
             # block for message send/receive
+            sleep(1)
             client.loop(myMQTT.keepalive/2)
 
 
