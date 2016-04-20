@@ -55,10 +55,11 @@ def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
 
 #Called when message received on token_topic
+'''
 def on_token(client, userdata, msg):
     print("Received message: "+str(msg.payload)+". On topic: "+msg.topic)
     time.sleep(2)
-    client.publish(userdata.send_token_topic, userdata.UID)
+    client.publish(userdata.send_token_topic, userdata.UID)'''
 
 #Called when message received on will_topic
 def on_will(client, userdata, msg):
