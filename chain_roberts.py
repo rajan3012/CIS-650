@@ -9,6 +9,7 @@ usage: pass_token_mqtt.py <UID> <upstream UID>
 import sys
 import time
 import paho.mqtt.client as mqtt
+from time import sleep
 #from enum import Enum
 
 
@@ -225,6 +226,8 @@ def main():
         client.subscribe([(myMQTT.subscribe_topic, myMQTT.qos),
                           (myMQTT.will_topic, myMQTT.qos),
                           ])
+
+        sleep(10)
 
         # initiate first publish of ID for leader election
         client.message_callback_add(myMQTT.subscribe_topic, on_active)
