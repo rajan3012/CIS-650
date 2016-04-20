@@ -228,7 +228,7 @@ def main():
 
         # initiate first publish of ID for leader election
         if myMQTT.UID == 1:
-            client.message_callback_add(myMQTT.subscribe_topic_topic, on_active)
+            client.message_callback_add(myMQTT.subscribe_topic, on_active)
             send_uid(client, myMQTT, myMQTT.UID)
         myMQTT.active = True
 
