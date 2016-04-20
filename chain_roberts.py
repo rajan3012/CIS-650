@@ -238,8 +238,10 @@ def main():
         client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
 
         # spin wait on connect until we do anything else
+        print "waiting for connect ..."
         while not myMQTT.connected:
-            sleep(1)
+            client.loop()
+
         client.message_callback_add(myMQTT.subscribe_topic, on_active)
         myMQTT.active = True
 
