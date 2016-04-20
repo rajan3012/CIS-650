@@ -31,7 +31,8 @@ class MQTT_data:
         self.port = 1883
         self.send_token_topic = 'token/' + str(upstream_UID)
         self.will_topic = 'will/'
-        self.token_topic = 'token/' + str(UID)
+        self.publish_topic = 'token/' + str(UID)
+        self.subscribe_topic = 'token/' + str(upstream_UID)
         self.will_message = "Dead UID: {}, upstream_UID: {} ".format(UID, upstream_UID)
         self.qos = 0
         self.keepalive = 30
@@ -162,11 +163,11 @@ def wait(client, userdata):
 
 def send_uid(client, userdata, uid):
     payload = 'send_id:' + uid
-    client.publish(userdata.token_topic, payload)
+    client.publish(userdata.publish_topic, payload)
 
 def send_leader(client,userdata, uid):
     payload = 'send_leader:' + uid
-    client.publish(userdata.token_topic)
+    client.publish(userdata.publish_topic, payload)
 
 def main():
     #############################################
@@ -217,14 +218,14 @@ def main():
         client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
 
         # subscribe to list of topics
-        client.subscribe([(myMQTT.token_topic, myMQTT.qos),
+        client.subscribe([(myMQTT.subscribe_topic, myMQTT.qos),
                           (myMQTT.will_topic, myMQTT.qos),
                           ])
 
         # initiate first publish of ID for leader election
-        client.message_callback_add(myMQTT.token_topic, on_active)
-        payload = 'send_id:' + str(myMQTT.UID)
-        client.publish(myMQTT.send_token_topic, payload)
+        if myMQTT.UID == 1:
+            client.message_callback_add(myMQTT.token_topic, on_active)
+            send_uid(client, myMQTT, myMQTT.UID)
         myMQTT.active = True
 
         # main loop
