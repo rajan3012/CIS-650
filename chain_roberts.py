@@ -147,8 +147,8 @@ def active(client, userdata):
     if userdata.active == False:
         send_uid(client, userdata, userdata.UID)
 
-    #client.message_callback_remove(userdata.subscribe_topic)
-    #client.message_callback_add(userdata.subscribe_topic, on_active)
+    client.message_callback_remove(userdata.subscribe_topic)
+    client.message_callback_add(userdata.subscribe_topic, on_active)
 
 def passive(client, userdata):
     print("State changed to passive")
@@ -266,9 +266,9 @@ def main():
                 pass
 
             # block for message send/receive
-            sleep(1)
+            sleep(5)
             client.loop(myMQTT.keepalive/2)
-
+            print "client.loop timout"
 
     except (KeyboardInterrupt):
         print "Interrupt received"
