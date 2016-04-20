@@ -71,7 +71,7 @@ def on_message(client, userdata, msg):
 
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
-    message_name, uid = msg.payload.split(':')
+    message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_id':
         decide(client, userdata, uid)
@@ -80,17 +80,17 @@ def on_active(client, userdata, msg):
         working(client,userdata)
 
 def on_passive(client, userdata, msg):
-    message_name, uid = msg.payload.split(':')
+    message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
         userdata.leader = uid
-        print "Accepted {} as my leader"j.format(userdata.leader)
+        print "Accepted {} as my leader".format(userdata.leader)
         working(client, userdata)
     elif message_name == 'send_id':
         send_uid(client, userdata, uid)
 
 def on_wait(client, userdata, msg):
-    message_name, uid = msg.payload.split(':')
+    message_name, uid = tuple(msg.payload.split(':'))
 
     if message_name == 'send_leader':
         print "Leader announce has gone full circle"
@@ -189,7 +189,7 @@ def main():
     ## MQTT settings
     #############################################
 
-    myMQTT = MQTT_data(UID, upstream_UID)
+    myMQTT = MQTT_data(UID, upstream_UID)  #instance of your class
 
     #############################################
     ## Connect to broker and subscribe to topics
@@ -213,7 +213,7 @@ def main():
         client.message_callback_add(myMQTT.will_topic, on_will)
 
         # connect to broker
-        client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive//2))
+        client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
 
         # subscribe to list of topics
         client.subscribe([(myMQTT.token_topic, myMQTT.qos),
