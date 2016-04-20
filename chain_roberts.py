@@ -77,7 +77,6 @@ def on_message(client, userdata, msg):
 #Active state waiting for send_id or send_leader
 def on_active(client, userdata, msg):
     print "in active--- msg received: {}".format(msg.payload)
-    print msg.payload.split(':')
     message_name, uid = parse_msg(msg.payload)
 
     if message_name == 'send_id':
@@ -110,6 +109,7 @@ def on_wait(client, userdata, msg):
 
 def on_working(client, userdata, msg):
     print "Supposed to be working but have nothing to do"
+    print "exiting on_working"
 
 ################################################
 ## State Functions
@@ -151,9 +151,11 @@ def active(client, userdata):
     # TODO  active should always be True, remove?
     if userdata.active == False:
         send_uid(client, userdata, userdata.UID)
-
+    print "removing previous callback"
     client.message_callback_remove(userdata.subscribe_topic)
+    print "installing on_active"
     client.message_callback_add(userdata.subscribe_topic, on_active)
+    print "exiting active"
 
 def passive(client, userdata):
     print("State changed to passive")
@@ -233,6 +235,8 @@ def main():
 
         # callbacks for specific topics
         client.message_callback_add(myMQTT.will_topic, on_will)
+        client.message_callback_add(myMQTT.subscribe_topic, on_active)
+        myMQTT.active = True
 
         # connect to broker
         client.connect(myMQTT.broker, myMQTT.port, keepalive=(myMQTT.keepalive))
@@ -242,18 +246,11 @@ def main():
         while not myMQTT.connected:
             client.loop()
 
-        client.message_callback_add(myMQTT.subscribe_topic, on_active)
-        myMQTT.active = True
-
-
-        # let connect stabilize
-        sleep(10)
 
         # subscribe to list of topics
         client.subscribe([(myMQTT.subscribe_topic, myMQTT.qos),
                           (myMQTT.will_topic, myMQTT.qos),
                           ])
-
 
         # initiate first publish of ID for leader election
         send_uid(client, myMQTT, myMQTT.UID)
