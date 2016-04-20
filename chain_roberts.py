@@ -112,15 +112,16 @@ def on_working(client, userdata, msg):
 def decide(client, userdata, uid):
     print "State changed to decide"
     userdata.state = States.decide
+    print "uid={} userdata.UID={}".format(uid, userdata.UID)
 
     if uid > userdata.UID:
-        print "uid={} userdata.UID={}".format(uid, userdata.UID)
         send_uid(client, userdata, uid)
         passive(client, userdata)
     elif uid == userdata.UID:
         print "I, {},  am the leader".format(userdata.UID)
         announce(client, userdata)
 
+    print "Going back to active"
     userdata.active == True
     active(client, userdata)
 
