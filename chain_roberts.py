@@ -132,8 +132,8 @@ def announce(client, userdata):
 def working(client, userdata):
     print "State changed to working"
     userdata.state = States.working
-    client.message_callback_remove(userdata.token_topic)
-    client.message_callback_add(userdata.token_topic, on_working)
+    client.message_callback_remove(userdata.subscribe_topic)
+    client.message_callback_add(userdata.subscribe_topic, on_working)
 
 
 def active(client, userdata):
@@ -144,22 +144,22 @@ def active(client, userdata):
     if userdata.active == False:
         send_uid(client, userdata, userdata.UID)
 
-    client.message_callback_remove(userdata.token_topic)
-    client.message_callback_add(userdata.token_topic, on_active)
+    client.message_callback_remove(userdata.subscribe_topic)
+    client.message_callback_add(userdata.subscribe_topic, on_active)
 
 def passive(client, userdata):
     print("State changed to passive")
     userdata.state = States.passive
 
-    client.message_callback_remove(userdata.token_topic)
-    client.message_callback_add(userdata.token_topic, on_passive)
+    client.message_callback_remove(userdata.subscribe_topic)
+    client.message_callback_add(userdata.subscribe_topic, on_passive)
 
 def wait(client, userdata):
     print("State changed to wait for round trip")
     userdata.state = States.wait
 
-    client.message_callback_remove(userdata.token_topic)
-    client.message_callback_add(userdata.token_topic, on_wait)
+    client.message_callback_remove(userdata.subscribe_topic)
+    client.message_callback_add(userdata.subscribe_topic, on_wait)
 
 ################################################
 ## Publish functions
@@ -228,7 +228,7 @@ def main():
 
         # initiate first publish of ID for leader election
         if myMQTT.UID == 1:
-            client.message_callback_add(myMQTT.token_topic, on_active)
+            client.message_callback_add(myMQTT.subscribe_topic_topic, on_active)
             send_uid(client, myMQTT, myMQTT.UID)
         myMQTT.active = True
 
