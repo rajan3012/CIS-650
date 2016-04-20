@@ -218,8 +218,8 @@ def count_primes(lower_bound, upper_bound):
     start = timer()
 
     for n in range(lower_bound, upper_bound):
-        upper = ceil(sqrt(n))
-        for i in range(2,upper):
+        upper = int(ceil(sqrt(n)))
+        for i in range(2, upper):
             if n % i != 0:
                 break
             count += 1
