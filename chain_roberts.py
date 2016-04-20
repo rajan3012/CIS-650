@@ -168,10 +168,12 @@ def wait(client, userdata):
 
 def send_uid(client, userdata, uid):
     payload = 'send_id:' + str(uid)
+    print "Sending msg {} to {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload)
 
 def send_leader(client,userdata, uid):
     payload = 'send_leader:' + str(uid)
+    print "Sending msg {} to {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload)
 
 def main():
