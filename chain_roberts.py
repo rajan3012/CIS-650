@@ -267,7 +267,7 @@ def main():
 
             # block for message send/receive
             sleep(5)
-            client.loop(myMQTT.keepalive/2)
+            client.loop(myMQTT.keepalive//2)
             print "client.loop timout"
 
     except (KeyboardInterrupt):
