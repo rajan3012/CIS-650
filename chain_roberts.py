@@ -41,6 +41,7 @@ class MQTT_data:
         self.active = False
         self.leader = None
         self.connected = False
+        self.wait_on_publish = False
 
 ##############################################
 ## MQTT callbacks
@@ -57,6 +58,7 @@ def on_connect(client, userdata, flags, rc):
 #Called when a published message has completed transmission to the broker
 def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
+    userdata.wait_on_publish = False
 
 #Called when message received on token_topic
 
@@ -174,11 +176,13 @@ def send_uid(client, userdata, uid):
     payload = 'send_id:' + str(uid)
     print "Publishing msg {} on {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload,userdata.qos, True)
+    userdata.wait_on_publish = True
 
 def send_leader(client,userdata, uid):
     payload = 'send_leader:' + str(uid)
     print "Publishing msg {} to {}".format(payload,userdata.publish_topic)
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
+    userdata.wait_on_publish = True
 
 def parse_msg(msg):
     msg_list = msg.split(':')
@@ -274,6 +278,9 @@ def main():
             print "going into client.loop"
             client.loop(myMQTT.keepalive // 3)
             print "exiting client loop"
+
+            while myMQTT.wait_on_publish:
+                client.loop()
 
     except (KeyboardInterrupt):
         print "Interrupt received"
