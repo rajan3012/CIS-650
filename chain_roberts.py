@@ -166,11 +166,11 @@ def wait(client, userdata):
 ################################################
 
 def send_uid(client, userdata, uid):
-    payload = 'send_id:' + uid
+    payload = 'send_id:' + str(uid)
     client.publish(userdata.publish_topic, payload)
 
 def send_leader(client,userdata, uid):
-    payload = 'send_leader:' + uid
+    payload = 'send_leader:' + str(uid)
     client.publish(userdata.publish_topic, payload)
 
 def main():
