@@ -1,0 +1,68 @@
+/* Concurrency: State Models & Java Programs
+*  Jeff Magee & Jeff Kramer
+*  Solutions to Exercises
+*
+*  Exercise 7.7
+*/
+
+const False = 0
+const True  = 1
+range Bool  = False..True
+set   BoolActions = {setTrue, setFalse, [False], [True]}
+
+BOOLVAR = VAL[False],
+VAL[v:Bool] = (setTrue  -> VAL[True]
+              |setFalse -> VAL[False]
+              |[v]      -> VAL[v]
+              ).
+
+set   CardActions = {set1,set2,[1],[2]}
+range Card =  1..2
+CARDVAR     = VAL[1],
+VAL[i:Card] = (set1 -> VAL[1]
+              |set2 -> VAL[2]
+              |[i]  -> VAL[i]
+              ).
+
+||VARS = (flag1:BOOLVAR || flag2:BOOLVAR || turn:CARDVAR).
+
+NEIGHBOR1 = (strong -> do_chores -> NEIGHBOR1
+			 |weak -> get_food -> flag1.setTrue -> turn.set2 -> TEST),
+TEST       = (flag2[b:Bool] -> turn[c:Card] ->
+                if(b && c==2) then
+                   TEST
+                else
+                   (enter -> exit -> flag1.setFalse -> NEIGHBOR1)
+              )+{{flag1,flag2}.BoolActions, turn.CardActions}.
+
+NEIGHBOR2 = (strong -> do_chores -> NEIGHBOR2
+			 |weak -> get_food -> flag2.setTrue -> turn.set1 -> TEST),
+TEST       = (flag1[b:Bool] -> turn[c:Card] ->
+                if(b && c==1) then
+                    TEST
+                else
+                   (enter -> exit-> flag2.setFalse -> NEIGHBOR2)
+              )+{{flag1,flag2}.BoolActions, turn.CardActions}.
+
+//property SAFETY = (n1.enter -> n1.exit -> SAFETY | n2.enter -> n2.exit -> SAFETY).
+
+fluent IN_ONE = <n1.enter, n1.exit>
+fluent IN_TWO = <n2.enter, n2.exit>
+assert NOT_BOTH = []!(IN_ONE && IN_TWO)
+
+||FIELD = (n1:NEIGHBOR1 || n2:NEIGHBOR2 || {n1,n2}::VARS || SAFETY).
+
+progress ENTER1  = {n1.enter}  //NEIGBOUR 1 always gets to enter
+progress ENTER2  = {n2.enter}  //NEIGHBOUR 2 always gets to enter
+
+/* greedy neighbours - make setting the flags high priority - eagerness to enter*/
+
+||GREEDY = FIELD << {n1.strong}.
+
+/* progress violation does not now occur due to the turn indicator
+*/
+
+
+
+
+
