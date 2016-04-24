@@ -20,18 +20,18 @@ class Role:
 class Msg:
     false           = '0'
     true            = '1'
-    set_flag1_true  = '1'
-    set_flag1_false = '2'
-    set_flag2_true  = '3'
-    set_flag2_false = '4'
-    test_flag1      = '5'
-    set_card_1      = '6'
-    set_card_2      = '7'
-    rslt_flag1      = '8'
-    test_flag2      = '9'
-    rslt_flag2      = 'a'
-    enter_field     = 'b'
-    exit_field      = 'c'
+    set_flag1_true  = '2'
+    set_flag1_false = '3'
+    set_flag2_true  = '4'
+    set_flag2_false = '5'
+    test_flag1      = '6'
+    set_card_1      = '7'
+    set_card_2      = '8'
+    rslt_flag1      = '9'
+    test_flag2      = 'a'
+    rslt_flag2      = 'b'
+    enter_field     = 'c'
+    exit_field      = 'd'
 
 
 class Health:
@@ -208,7 +208,7 @@ def on_gate(client, userdata, msg):
 #Callback method for neighbor roles
 def on_neighbor(client, userdata, msg):
     msg_type, value = parse_msg(msg)
-    if (msg_type == userdata.role.send_rslt) and (userdata.role.state == Neighbor.TEST):
+    if (msg_type == userdata.role.rslt_flag) and (userdata.role.state == Neighbor.TEST):
         if value == Msg.True:
             # enter the field
             print("Entering the field")
