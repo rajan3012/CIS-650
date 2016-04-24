@@ -342,6 +342,9 @@ def neighbor(client, userdata):
                 userdata.role.state = Neighbor.INIT
                 userdata.role.strength = Health.strong
 
+        # slow things down
+        sleep(3)
+        
         # check for messages
         client.loop()
 
