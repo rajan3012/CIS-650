@@ -167,6 +167,7 @@ def on_message(client, userdata, msg):
 
 def on_gate(client, userdata, msg):
     print("Gate | Received message: " + str(msg.payload) + "on topic: " + msg.topic)
+    print("flag1={}, flag2={}, card={}".format(userdata.role.flag1,userdata.role.flag2,userdata.role.card))
     #message_name, uid, flag_value , turn = parse_msg(msg.payload)
     msg_type , value = parse_msg(msg)
     #if(flag_value == 'True'): #neighbour is trying to enter the field
@@ -197,7 +198,7 @@ def on_gate(client, userdata, msg):
             client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.true)
 
     elif (msg_type == Msg.test_flag2):
-        if (userdata.role.flag2 == True and userdata.role.card == 2):
+        if (userdata.role.flag2 == Msg.true and userdata.role.card == 2):
             print("N2 in field. Wait your turn N1")
             client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.false)
         else:
@@ -344,7 +345,7 @@ def neighbor(client, userdata):
 
         # slow things down
         sleep(3)
-        
+
         # check for messages
         client.loop()
 
