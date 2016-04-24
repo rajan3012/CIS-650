@@ -117,6 +117,7 @@ class MQTT:
             print("Configuring as Neighbor 2")
             self.role = Neighbor(role)
 
+        self.broker = "white0"
         self.port = 1883
 
         # topics
