@@ -216,6 +216,7 @@ def parse_msg(msg):
 def field(client, userdata):
 
     client.message_callback_add(userdata.field_topic, on_field)
+    client.subscribe(userdata.field_topic, userdata.qos)
 
     while not userdata.abort:
         check_publish_queue(client, userdata)
@@ -247,6 +248,7 @@ def neighbor(client, userdata):
         return userdata.role.strength == Health.strong
 
     client.message_callback_add(userdata.gate_topic, on_neighbor)
+    client.subscribe(userdata.gate_topic, userdata.qos)
 
     # Main processing loop, cycle between doing chors and getting food
     while not userdata.abort:
