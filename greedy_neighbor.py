@@ -173,23 +173,23 @@ def on_gate(client, userdata, msg):
 
     # do something with message
     if (msg_type == Msg.set_flag1_true) :#and (userdata.role.state == Neighbor.TEST): #if flag1 is true
-        Gate.flag1 = Msg.true
+        userdata.role.flag1 = Msg.true
     elif (msg_type == Msg.set_flag1_false):  # and (userdata.role.state == Neighbor.TEST): #if flag1 is true
-        Gate.flag1 = Msg.false
+        userdata.role.flag1 = Msg.false
 
     elif (msg_type == Msg.set_flag2_true):
-        Gate.flag2 = Msg.true
+        userdata.role.flag2 = Msg.true
     elif (msg_type == Msg.set_flag2_false):
-        Gate.flag2 = Msg.false
+        userdata.role.flag2 = Msg.false
 
     elif (msg_type == Msg.set_card_1):
-        Gate.card = 1
+        userdata.role.card = 1
     elif (msg_type == Msg.set_card_2):
-        Gate.card = 2
+        userdata.role.card = 2
 
 
     elif (msg_type == Msg.test_flag1):
-        if(Gate.flag1 == Msg.true and Gate.card==1):
+        if(userdata.role.flag1 == Msg.true and userdata.role.card==1):
             print("N1 in field. Wait your turn N2")
             client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.false)
         else:
@@ -197,7 +197,7 @@ def on_gate(client, userdata, msg):
             client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.true)
 
     elif (msg_type == Msg.test_flag2):
-        if (Gate.flag2 == True and Gate.card == 2):
+        if (userdata.role.flag2 == True and userdata.role.card == 2):
             print("N2 in field. Wait your turn N1")
             client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.false)
         else:
@@ -299,7 +299,6 @@ def neighbor(client, userdata):
 
     def strong():
         # returns true if strong. derive some function
-        # to determine whether doing chores or getting
         # food
         return userdata.role.strength == Health.strong
 
@@ -330,7 +329,7 @@ def neighbor(client, userdata):
                 print("Requesting entry into field")
                 client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.TEST
-            elif (userdata.role.stat == Neighbor.FIELD) and (not userdata.pending):
+            elif (userdata.role.state == Neighbor.FIELD) and (not userdata.pending):
                 print("Gathering food")
                 sleep(1)
                 print("Exiting field")
