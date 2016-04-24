@@ -18,15 +18,15 @@ class Role:
     neigh2 = 3
 
 class Msg:
-    set_flag1_true  = '0'
+    set_flag1_true  = '0' #neighbor sends these, gate listens to them
     set_flag1_false = '1'
     set_flag2_true  = '2'
     set_flag2_false = '3'
-    test_flag1      = '4'
+    test_flag1      = '4' #neighbor sends these, gate listens to them
     set_card_1      = '5'
     set_card_2      = '6'
-    rslt_flag1      = '7'
-    test_flag2      = '8'
+    rslt_flag1      = '7' #sent by gate when neighbor sends flag1 value
+    test_flag2      = '8' #sent by gate when neighbor sends flag2 value
     rslt_flag2      = '9'
     enter_field     = 'a'
     exit_field      = 'b'
@@ -42,10 +42,14 @@ class Field:
     def __init__(self):
         self.id = Role.field
 
+
 class Gate:
 
     def __init__(self):
         self.id = Role.gate
+        self.flag1 = False
+        self.flag2 = False
+        self.card = -1
 
 class Neighbor:
 
@@ -152,11 +156,43 @@ def on_message(client, userdata, msg):
 
 def on_gate(client, userdata, msg):
     print("Gate | Received message: " + str(msg.payload) + "on topic: " + msg.topic)
-    message_name, uid, flag_value , turn = parse_msg(msg.payload)
-    if(flag_value == 'True'): #neighbour is trying to enter the field
+    #message_name, uid, flag_value , turn = parse_msg(msg.payload)
+    msg_type , value = parse_msg(msg)
+    #if(flag_value == 'True'): #neighbour is trying to enter the field
 
     # do something with message
-    pass
+    if (msg_type == Msg.set_flag1_true) :#and (userdata.role.state == Neighbor.TEST): #if flag1 is true
+        Gate.flag1 = True
+    elif (msg_type == Msg.set_flag1_false):  # and (userdata.role.state == Neighbor.TEST): #if flag1 is true
+        Gate.flag1 = False
+
+    if (msg_type == Msg.set_flag2_true):
+        Gate.flag2 = True
+    if (msg_type == Msg.set_flag2_true):
+        Gate.flag2 = False
+
+    if (msg_type == Msg.set_card_1):
+        Gate.card = 1
+    if (msg_type == Msg.set_card_2):
+        Gate.card = 2
+
+
+    if (msg_type == Msg.test_flag1):
+        if(Gate.flag1 == True and Gate.card==1):
+            print("N1 in field. Wait your turn N2")
+            return False
+        else:
+            print("N1 can enter the field")
+            return True
+
+    if (msg_type == Msg.test_flag2):
+        if (Gate.flag2 == True and Gate.card == 2):
+            print("N2 in field. Wait your turn N1")
+            return False
+        else:
+            print("N2 can enter the field")
+            return True
+
 
 #Callback method for neighbor roles
 def on_neighbor(client, userdata, msg):
@@ -217,10 +253,10 @@ def gate(client, userdata):
 
     #main processing loop
     while not userdata.abort:
-        check_publish_queue(client, userdata)
+        check_publish_queue(client, userdata.qos)
         #do something
+        client.loop()
 
-    pass
 
 
 def neighbor(client, userdata):
