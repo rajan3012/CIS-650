@@ -335,7 +335,7 @@ def neighbor(client, userdata):
                 print("Exiting field")
                 client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.EXIT
-            elif (userdata.role.stat == Neighbor.EXIT) and (not userdata.pending):
+            elif (userdata.role.state == Neighbor.EXIT) and (not userdata.pending):
                 print("Set my flag to false")
                 client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.INIT
