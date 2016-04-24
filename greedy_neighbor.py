@@ -219,7 +219,6 @@ def field(client, userdata):
     client.subscribe(userdata.field_topic, userdata.qos)
 
     while not userdata.abort:
-        check_publish_queue(client, userdata)
         client.loop()
 
 
