@@ -50,8 +50,8 @@ class Gate:
 
     def __init__(self):
         self.id = Role.gate
-        self.flag1 = False
-        self.flag2 = False
+        self.flag1 = Msg.false
+        self.flag2 = Msg.false
         self.card = -1
 
 class Neighbor:
@@ -209,6 +209,7 @@ def on_gate(client, userdata, msg):
 #Callback method for neighbor roles
 def on_neighbor(client, userdata, msg):
     msg_type, value = parse_msg(msg)
+    print("msg_type={}, value={}".format(msg_type,value))
     if (msg_type == userdata.role.rslt_flag) and (userdata.role.state == Neighbor.TEST):
         if value == Msg.true:
             # enter the field
