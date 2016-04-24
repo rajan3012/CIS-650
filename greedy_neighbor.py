@@ -18,7 +18,6 @@ class Role:
     neigh2 = 3
 
 class Msg:
-
     false           = '0'
     true            = '1'
     set_flag1_true  = '1'
@@ -166,36 +165,36 @@ def on_gate(client, userdata, msg):
 
     # do something with message
     if (msg_type == Msg.set_flag1_true) :#and (userdata.role.state == Neighbor.TEST): #if flag1 is true
-        Gate.flag1 = True
+        Gate.flag1 = Msg.true
     elif (msg_type == Msg.set_flag1_false):  # and (userdata.role.state == Neighbor.TEST): #if flag1 is true
-        Gate.flag1 = False
+        Gate.flag1 = Msg.false
 
-    if (msg_type == Msg.set_flag2_true):
-        Gate.flag2 = True
-    if (msg_type == Msg.set_flag2_true):
-        Gate.flag2 = False
+    elif (msg_type == Msg.set_flag2_true):
+        Gate.flag2 = Msg.true
+    elif (msg_type == Msg.set_flag2_false):
+        Gate.flag2 = Msg.false
 
-    if (msg_type == Msg.set_card_1):
+    elif (msg_type == Msg.set_card_1):
         Gate.card = 1
-    if (msg_type == Msg.set_card_2):
+    elif (msg_type == Msg.set_card_2):
         Gate.card = 2
 
 
-    if (msg_type == Msg.test_flag1):
-        if(Gate.flag1 == True and Gate.card==1):
+    elif (msg_type == Msg.test_flag1):
+        if(Gate.flag1 == Msg.true and Gate.card==1):
             print("N1 in field. Wait your turn N2")
-            return False
+            client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.false)
         else:
             print("N1 can enter the field")
-            return True
+            client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.true)
 
-    if (msg_type == Msg.test_flag2):
+    elif (msg_type == Msg.test_flag2):
         if (Gate.flag2 == True and Gate.card == 2):
             print("N2 in field. Wait your turn N1")
-            return False
+            client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.false)
         else:
             print("N2 can enter the field")
-            return True
+            client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.true)
 
 
 #Callback method for neighbor roles
@@ -274,6 +273,7 @@ def field(client, userdata):
 def gate(client, userdata):
 
     client.message_callback_add(userdata.gate_topic, on_gate)
+    client.subscribe(userdata.gate_topic, userdata.qos)
 
     #main processing loop
     while not userdata.abort:
