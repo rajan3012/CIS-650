@@ -18,20 +18,20 @@ class Role:
     neigh2 = 3
 
 class Msg:
-    set_flag1_true  = '0'
-    set_flag1_false = '1'
-    set_flag2_true  = '2'
-    set_flag2_false = '3'
-    test_flag1      = '4'
-    set_card_1      = '5'
-    set_card_2      = '6'
-    rslt_flag1      = '7'
-    test_flag2      = '8'
-    rslt_flag2      = '9'
-    enter_field     = 'a'
-    exit_field      = 'b'
-    true            = 'c'
-    false           = 'd'
+    false           = '0'
+    true            = '1'
+    set_flag1_true  = '1'
+    set_flag1_false = '2'
+    set_flag2_true  = '3'
+    set_flag2_false = '4'
+    test_flag1      = '5'
+    set_card_1      = '6'
+    set_card_2      = '7'
+    rslt_flag1      = '8'
+    test_flag2      = '9'
+    rslt_flag2      = 'a'
+    enter_field     = 'b'
+    exit_field      = 'c'
 
 class Health:
     strong = 0
@@ -41,6 +41,7 @@ class Field:
 
     def __init__(self):
         self.id = Role.field
+        self.occupants = set()
 
 class Gate:
 
@@ -103,7 +104,7 @@ class MQTT:
             self.role = Gate()
         elif role == Role.neigh1:
             self.role = Neighbor(1)
-        self.port        = 1883
+        self.port = 1883
 
         # topics
         self.field_topic = 'Field'
@@ -167,7 +168,21 @@ def on_neighbor(client, userdata, msg):
             userdata.role.state = Neighbor.REQUEST
 
 def on_field(client, userdata, msg):
-    pass
+
+    msg_type, value = parse_msg(msg)
+
+    if msg_type == Msg.enter_field:
+        userdata.role.occupants.add(value)
+        print("Neighbor {} has entered the field".format(value))
+    elif msg_type == Msg.exit_field:
+        if value in userdata.role.occupants:
+            print("Neighbor {} is leaving the field".format(value))
+            userdata.role.occupants.remove(value)
+        else:
+            print("ERROR: Neighbor {} is not in field".format(value))
+
+    print("The field now holds {}".format(userdata.role.occupants.__repr__()))
+
 
 #############################################
 ## Utility methods
@@ -199,7 +214,13 @@ def parse_msg(msg):
 #############################################
 
 def field(client, userdata):
-    pass
+
+    client.message_callback_add(userdata.field_topic, on_field)
+
+    while not userdata.abort:
+        check_publish_queue(client, userdata)
+        client.loop()
+
 
 def gate(client, userdata):
 
@@ -311,6 +332,9 @@ def main():
             gate(client, me)
         elif (me.role.id == Role.neigh1) or (me.role.id == (Role.neigh2)):
             neighbor(client, me)
+
+        client.disconnect()
+        sys.exit()
 
     except (KeyboardInterrupt):
         print "Interrupt received"
