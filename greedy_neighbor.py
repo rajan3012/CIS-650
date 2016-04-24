@@ -7,16 +7,35 @@ usage: greedy_neighbor.py <UID> <field(0), gate(1), neighbor1(2) , neighbor2(3)>
 > Command line arg to check status of broker $ /etc/init.d/mosquitto status 
 """
 import sys
-import time
+from time import sleep
 import paho.mqtt.client as mqtt
 
 
 class Role:
-
-    field = 0
-    gate = 1
+    field  = 0
+    gate   = 1
     neigh1 = 2
     neigh2 = 3
+
+class Msg:
+    set_flag1_true  = '0'
+    set_flag1_false = '1'
+    set_flag2_true  = '2'
+    set_flag2_false = '3'
+    test_flag1      = '4'
+    set_card_1      = '5'
+    set_card_2      = '6'
+    rslt_flag1      = '7'
+    test_flag2      = '8'
+    rslt_flag2      = '9'
+    enter_field     = 'a'
+    exit_field      = 'b'
+    true            = 'c'
+    false           = 'd'
+
+class Health:
+    strong = 0
+    weak   = 1
 
 class Field:
 
@@ -30,13 +49,44 @@ class Gate:
 
 class Neighbor:
 
+    INIT    = 0
+    FLAG    = 1
+    CARD    = 2
+    REQUEST = 3
+    TEST    = 4
+    FIELD   = 5
+    EXIT    = 6
+
     def __init__(self, n):
+        self.id = None
         if n == 1:
             self.id = Role.neigh1
         elif n == 2:
             self.id = Role.neigh2
-        else:
-            self.id = None
+
+        self.strength = Health.strong
+        self.state = Neighbor.INIT
+
+        self.send_set_flag_false = None
+        self.send_set_flag_true = None
+        self.send_set_card = None
+        self.send_test_flag = None
+        self.rslt_flag = None
+
+        # set which flags/card values to use
+        if self.id == Role.neigh1:
+            self.send_set_flag_false = Msg.set_flag1_false
+            self.send_set_flag_true = Msg.set_flag1_true
+            self.send_set_card = Msg.set_card_2
+            self.send_test_flag = Msg.test_flag2
+            self.rslt_flag = Msg.rslt_flag2
+        elif self.id == Role.neigh2:
+            self.send_set_flag_false = Msg.set_flag2_false
+            self.send_set_flag_true = Msg.set_flag2_true
+            self.send_set_card = Msg.set_card_1
+            self.send_test_flag = Msg.test_flag1
+            self.rslt_flag = Msg.rslt_flag2
+
 
 #############################################
 ## MQTT settings
@@ -59,11 +109,11 @@ class MQTT:
         self.gate_topic = 'Gate'
         self.will_topic = 'will/'
 
-        #quality of service
+        # quality of service
         self.qos = 1
         self.keepalive = 30
 
-
+        # status attributes
         self.connected = False
         self.abort = False
 
@@ -104,9 +154,15 @@ def on_gate(client, userdata, msg):
     pass
 
 def on_neighbor(client, userdata, msg):
-    pass
+    msg_type, value = parse_msg(msg)
+    if (msg_type == userdata.role.send_rslt) and (userdata.role.state == Neighbor.TEST):
+        if value == Msg.True:
+            # enter the field
+            client.publish(userdata.field_topic, Msg.enter_field + ':' + str(userdata.uid))
+            userdata.role.state = Neighbor.FIELD
 
 def on_field(client, userdata, msg):
+    pass
 
 #############################################
 ## Utility methods
@@ -121,10 +177,16 @@ def publish(client, userdata, topic, payload):
 
 def check_publish_queue(client, userdata):
 
-    if not userdata.pending && len(userdata.queue) > 0:
+    if not userdata.pending & len(userdata.queue) > 0:
         topic, payload = userdata.queue.pop()
         userdata.pending == True
         client.publish(topic, payload, userdata.qos)
+
+def parse_msg(msg):
+    msg_list = msg.split(':')
+    message_name = msg_list[0]
+    uid = int(msg_list[1])
+    return message_name, uid
 
 
 #############################################
@@ -145,18 +207,57 @@ def gate(client, userdata):
 
     pass
 
-def neighbor1(client, userdata):
+###############################################
+## Neighbor Methods
+###############################################
+
+
+def neighbor(client, userdata):
+
+    def do_chores():
+        sleep(1)
+        userdata.role.strength = Health.weak
+
+    def strong():
+        # returns true if strong. derive some function
+        # to determine whether doing chores or getting
+        # food
+        return userdata.role.strength == Health.strong
 
     client.message_callback_add(userdata.gate_topic, on_neighbor)
 
-    # Main processing loop
+    # Main processing loop, cycle between doing chors and getting food
     while not userdata.abort:
+
+        # sending any queued messages
         check_publish_queue(client, userdata.qos)
+
+        if strong():
+            do_chores()
+
+        # get some food when not doing chores
+        if not userdata.pending:
+            if userdata.role.state == Neighbor.INIT:
+                client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
+                userdata.role.state = Neighbor.FLAG
+            elif userdata.role.state == Neighbor.FLAG:
+                client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
+                userdata.role.state = Neighbor.RQST
+            elif (userdata.role.state == Neighbor.RQST) and (not userdata.pending):
+                client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
+                userdata.role.state = Neighbor.TEST
+            elif (userdata.role.stat == Neighbor.FIELD) and (not userdata.pending):
+                sleep(1)
+                client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
+                userdata.role.state = Neighbor.EXIT
+            elif (userdata.role.stat == Neighbor.EXIT) and (not userdata.pending):
+                client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
+                userdata.role.state = Neighbor.INIT
+                userdata.role.strength = Health.strong
+
+        # check for messages
         client.loop()
 
-
-def neighbor2(client, userdata):
-    pass
 
 #############################################
 ## Main method takes command line arguments initialize and call role
@@ -196,13 +297,13 @@ def main():
         while not me.connected:
             client.loop()
 
-        if me.role == Role.field:
+        if me.role.id == Role.field:
             field(client, me)
-        elif me.role == Role.gate:
+        elif me.role.id == Role.gate:
             gate(client, me)
-        elif me.role == Role.neigh1:
+        elif me.role.id == Role.neigh1:
             neighbor1(client, me)
-        elif me.role == Role.neigh2:
+        elif me.role.id == Role.neigh2:
             neighbor2(client, me)
 
     except (KeyboardInterrupt):
