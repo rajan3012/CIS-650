@@ -1,7 +1,7 @@
 """
 CIS 650 
 SPRING 2016
-usage: pass_token_mqtt.py <UID> <upstream UID>
+usage: greedy_neighbor.py <UID> <field(0), gate(1), neighbor1(2) , neighbor2(3)>
 
 > For python mosquitto client $ sudo pip install paho-mqtt
 > Command line arg to check status of broker $ /etc/init.d/mosquitto status 
@@ -10,38 +10,33 @@ import sys
 import time
 import paho.mqtt.client as mqtt
 
-#############################################
-## Get UID and upstram_UID from args
-#############################################
 
-if len(sys.argv) != 3:
-	print 'ERROR\nusage: pass_token_mqtt.py <int: UID> <int: upstream UID>'
-	sys.exit()
-
-try:
-    UID = int(sys.argv[1])
-    upstream_UID = int(sys.argv[2]) 
-except ValueError:
-	print 'ERROR\nusage: pass_token_mqtt.py <int: UID > <int: upstream UID >'
-	sys.exit()
-
+class Role:
+    field = 0
+    gate = 1
+    neigh1 = 2
+    neigh2 = 3
 
 #############################################
 ## MQTT settings
 #############################################
+class MQTT:
+    def __init__(self, my_uid, role):
+        self.uid = my_uid
+        self.role = role
+        self.port        = 1883
 
-broker      = 'blue0'
-port        = 1883
+        # topics
+        self.field_topic = 'Field'
+        self.gate_topic = 'Gate'
+        self.will_topic = 'will/'
 
-# publish topics
-send_token_topic = 'token/'+str(upstream_UID)
+        #quality of service
+        self.qos = 1
+        self.keepalive = 30
 
-# subscribe topics
-token_topic = 'token/'+str(UID)
-will_topic = 'will/'
-
-#quality of service
-qos = 0 
+        self.connected = False
+        self.abort = False
 
 ##############################################
 ## MQTT callbacks
@@ -53,20 +48,17 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed. RC: " + str(rc))
     else:
         print("Connected successfully with result code RC: " + str(rc))
+        userdata.connected = True
 
 #Called when a published message has completed transmission to the broker
 def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
 
-#Called when message received on token_topic
-def on_token(client, userdata, msg):
-    print("Received message: "+str(msg.payload)+". On topic: "+msg.topic)
-    time.sleep(2)
-    client.publish(send_token_topic, UID)
 
 #Called when message received on will_topic
 def on_will(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
+    userdata.abort = True
 
 #Called when a message has been received on a subscribed topic (unfiltered)
 def on_message(client, userdata, msg):
@@ -75,44 +67,71 @@ def on_message(client, userdata, msg):
 
 
 #############################################
-## Connect to broker and subscribe to topics
+## Role method
 #############################################
-try:
-    # create a client instance
-    client = mqtt.Client(str(UID))
 
-    # setup will for client
-    will_message = "Dead UID: {}, upstream_UID: {} ".format(UID,upstream_UID)
-    client.will_set(will_topic, will_message)
+def field():
+    pass
 
-    # callbacks
-    client.on_connect = on_connect
-    client.on_publish = on_publish
-    client.on_message = on_message 
+def gate():
+    pass
 
-    # callbacks for specific topics 
-    client.message_callback_add(token_topic, on_token)
-    client.message_callback_add(will_topic, on_will)
+def neighbor1():
+    pass
 
-    # connect to broker 
-    client.connect(broker, port, keepalive=30)
+def neighbor2():
+    pass
 
-    # subscribe to list of topics
-    client.subscribe([(token_topic, qos),
-                      (will_topic, qos),
-                      ])
+#############################################
+## Main method takes command line arguments initialize and call role
+#############################################
 
-    # initiate pub/sub
-    if UID == 1:
-        time.sleep(5)
-        client.publish(send_token_topic, UID)
+def main():
 
-    # network loop
-    client.loop_forever()
+    if len(sys.argv) != 3:
+        print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
+        sys.exit()
 
-except (KeyboardInterrupt):
-    print "Interrupt received"
-except (RuntimeError):
-    print "Runtime Error"
-    client.disconnect()
+    try:
+        my_uid = int(sys.argv[1])
+        my_role = int(sys.argv[2])
+    except ValueError:
+        print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
+        sys.exit()
+
+    me = MQTT(my_uid, my_role)
+
+    try:
+        # create a client instance
+        client = mqtt.Client(str(me.uid))
+        client.user_data_set(me)
+
+        # setup will for client
+        will_message = "Dead UID: {} role: {}".format(me.uid, me.role)
+        client.will_set(me.will_topic, will_message)
+
+        # callbacks
+        client.on_connect = on_connect
+        client.on_publish = on_publish
+        client.on_message = on_message
+
+        # connect to broker
+        client.connect(me.broker, me.port, keepalive=me.keepalive)
+        while not me.connected:
+            client.loop()
+
+        if me.role == Role.field:
+            field
+        elif me.role == Role.gate:
+            gate
+        elif me.role == Role.neigh1:
+            neighbor1
+        elif me.role == Role.neigh2:
+            neighbor2
+
+    except (KeyboardInterrupt):
+        print "Interrupt received"
+    except (RuntimeError):
+        print "Runtime Error"
+        client.disconnect()
 
