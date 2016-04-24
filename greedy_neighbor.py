@@ -67,9 +67,9 @@ class Neighbor:
 
     def __init__(self, n):
         self.id = None
-        if n == 1:
+        if n == Role.neigh1:
             self.id = Role.neigh1
-        elif n == 2:
+        elif n == Role.neigh2:
             self.id = Role.neigh2
 
         self.strength = Health.strong
@@ -102,14 +102,21 @@ class Neighbor:
 class MQTT:
     def __init__(self, my_uid, role):
         self.uid = my_uid
-        self.role = None
+        self.role = role
 
         if role == Role.field:
+            print("Configuring as a field")
             self.role = Field()
         elif role == Role.gate:
+            print("Configuring as a gate")
             self.role = Gate()
         elif role == Role.neigh1:
-            self.role = Neighbor(1)
+            print("Configuring as Neighbor 1")
+            self.role = Neighbor(role)
+        elif role == Role.neigh2:
+            print("Configuring as Neighbor 2")
+            self.role = Neighbor(role)
+
         self.port = 1883
 
         # topics
@@ -355,6 +362,7 @@ def main():
         print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
         sys.exit()
 
+    print("myUID={}, myRole={}".format(my_uid, my_role))
     me = MQTT(my_uid, my_role)
 
     try:
