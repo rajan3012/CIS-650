@@ -259,7 +259,7 @@ def check_publish_queue(client, userdata):
         client.publish(topic, payload, userdata.qos)
 
 def parse_msg(msg):
-    msg_list = msg.split(':')
+    msg_list = msg.payload.split(':')
     message_name = msg_list[0]
     uid = int(msg_list[1])
     return message_name, uid
@@ -325,8 +325,8 @@ def neighbor(client, userdata):
             elif userdata.role.state == Neighbor.FLAG:
                 print("Set card to my turn")
                 client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
-                userdata.role.state = Neighbor.RQST
-            elif (userdata.role.state == Neighbor.RQST) and (not userdata.pending):
+                userdata.role.state = Neighbor.REQUEST
+            elif (userdata.role.state == Neighbor.REQUEST) and (not userdata.pending):
                 print("Requesting entry into field")
                 client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.TEST
