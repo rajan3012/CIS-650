@@ -72,12 +72,22 @@ def on_message(client, userdata, msg):
     print('unfiltered message')
 
 def on_gate(client, userdata, msg):
+    print("Gate | Received message: " + str(msg.payload) + "on topic: " + msg.topic)
+    message_name, uid, flag_value , turn = parse_msg(msg.payload)
+    if(flag_value == 'True'): #neighbour is trying to enter the field
+
     # do something with message
     pass
 
 #############################################
 ## Utility methods
 #############################################
+
+def parse_msg(msg):
+    msg_list = msg.split(':')
+    message_name = msg_list[0]
+    uid = int(msg_list[1])
+    return message_name, uid
 
 def publish(client, userdata, topic, payload):
 
