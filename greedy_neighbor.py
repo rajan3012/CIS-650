@@ -310,7 +310,7 @@ def neighbor(client, userdata):
     while not userdata.abort:
 
         # sending any queued messages
-        check_publish_queue(client, userdata.qos)
+        check_publish_queue(client, userdata)
 
         if strong():
             print("Feeling strong, doing chores")
