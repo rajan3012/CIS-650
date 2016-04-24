@@ -35,8 +35,13 @@ class MQTT:
         self.qos = 1
         self.keepalive = 30
 
+
         self.connected = False
         self.abort = False
+
+        # queue of outgoing messages
+        self.queue = []
+        self.pending = False # waiting for a publish confirmation
 
 ##############################################
 ## MQTT callbacks
@@ -53,6 +58,7 @@ def on_connect(client, userdata, flags, rc):
 #Called when a published message has completed transmission to the broker
 def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
+    userdata.pending == False
 
 
 #Called when message received on will_topic
@@ -65,21 +71,51 @@ def on_message(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
     print('unfiltered message')
 
+def on_gate(client, userdata, msg):
+    # do something with message
+    pass
 
 #############################################
-## Role method
+## Utility methods
 #############################################
 
-def field():
+def publish(client, userdata, topic, payload):
+
+    if userdata.pending:
+        userdata.queue.append( (topic, payload) )
+    elif len(userdata.queue) == 0:
+        client.publish(topic, payload, userdata.qos)
+
+def check_publish_queue(client, userdata):
+
+    if not userdata.pending && len(userdata.queue) > 0:
+        topic, payload = userdata.queue.pop()
+        userdata.pending == True
+        client.publish(topic, payload, userdata.qos)
+
+
+#############################################
+## Role methods
+#############################################
+
+def field(client, userdata):
     pass
 
-def gate():
+def gate(client, userdata):
+
+    client.message_callback_add(userdata.gate_topic, on_gate)
+
+    #main processing loop
+    while not userdata.abort:
+        check_publish_queue(client, userdata)
+        #do something
+
     pass
 
-def neighbor1():
+def neighbor1(client, userdata):
     pass
 
-def neighbor2():
+def neighbor2(client, userdata):
     pass
 
 #############################################
@@ -121,13 +157,13 @@ def main():
             client.loop()
 
         if me.role == Role.field:
-            field
+            field(client, me)
         elif me.role == Role.gate:
-            gate
+            gate(client, me)
         elif me.role == Role.neigh1:
-            neighbor1
+            neighbor1(client, me)
         elif me.role == Role.neigh2:
-            neighbor2
+            neighbor2(client, me)
 
     except (KeyboardInterrupt):
         print "Interrupt received"
