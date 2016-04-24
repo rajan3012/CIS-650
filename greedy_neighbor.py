@@ -215,6 +215,7 @@ def on_neighbor(client, userdata, msg):
             client.publish(userdata.field_topic, Msg.enter_field + ':' + str(userdata.uid))
             userdata.role.state = Neighbor.FIELD
         else:
+            print("Neighbor is still in the field")
             userdata.role.state = Neighbor.REQUEST
 
 def on_field(client, userdata, msg):
