@@ -285,7 +285,7 @@ def gate(client, userdata):
 
     #main processing loop
     while not userdata.abort:
-        check_publish_queue(client, userdata.qos)
+        check_publish_queue(client, userdata)
         #do something
         client.loop()
 
