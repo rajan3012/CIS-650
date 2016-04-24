@@ -209,7 +209,7 @@ def on_gate(client, userdata, msg):
 def on_neighbor(client, userdata, msg):
     msg_type, value = parse_msg(msg)
     if (msg_type == userdata.role.rslt_flag) and (userdata.role.state == Neighbor.TEST):
-        if value == Msg.True:
+        if value == Msg.true:
             # enter the field
             print("Entering the field")
             client.publish(userdata.field_topic, Msg.enter_field + ':' + str(userdata.uid))
