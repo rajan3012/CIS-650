@@ -253,7 +253,7 @@ def publish(client, userdata, topic, payload):
 
 def check_publish_queue(client, userdata):
 
-    if not userdata.pending & len(userdata.queue) > 0:
+    if not userdata.pending and len(userdata.queue) > 0:
         topic, payload = userdata.queue.pop()
         userdata.pending == True
         client.publish(topic, payload, userdata.qos)
