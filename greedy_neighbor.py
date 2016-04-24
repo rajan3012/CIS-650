@@ -400,3 +400,5 @@ def main():
         print "Runtime Error"
         client.disconnect()
 
+if __name__ == "__main___":
+    main()
