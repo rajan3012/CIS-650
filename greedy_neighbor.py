@@ -12,10 +12,31 @@ import paho.mqtt.client as mqtt
 
 
 class Role:
+
     field = 0
     gate = 1
     neigh1 = 2
     neigh2 = 3
+
+class Field:
+
+    def __init__(self):
+        self.id = Role.field
+
+class Gate:
+
+    def __init__(self):
+        self.id = Role.gate
+
+class Neighbor:
+
+    def __init__(self, n):
+        if n == 1:
+            self.id = Role.neigh1
+        elif n == 2:
+            self.id = Role.neigh2
+        else:
+            self.id = None
 
 #############################################
 ## MQTT settings
@@ -23,7 +44,14 @@ class Role:
 class MQTT:
     def __init__(self, my_uid, role):
         self.uid = my_uid
-        self.role = role
+        self.role = None
+
+        if role == Role.field:
+            self.role = Field()
+        elif role == Role.gate:
+            self.role = Gate()
+        elif role == Role.neigh1:
+            self.role = Neighbor(1)
         self.port        = 1883
 
         # topics
@@ -79,6 +107,11 @@ def on_gate(client, userdata, msg):
     # do something with message
     pass
 
+def on_neighbor(client, userdata, msg):
+    pass
+
+def on_field(client, userdata, msg):
+
 #############################################
 ## Utility methods
 #############################################
@@ -123,7 +156,14 @@ def gate(client, userdata):
     pass
 
 def neighbor1(client, userdata):
-    pass
+
+    client.message_callback_add(userdata.gate_topic, on_neighbor)
+
+    # Main processing loop
+    while not userdata.abort:
+        check_publish_queue(client, userdata.qos)
+        client.loop()
+
 
 def neighbor2(client, userdata):
     pass
