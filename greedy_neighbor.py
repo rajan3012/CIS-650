@@ -209,7 +209,7 @@ def on_gate(client, userdata, msg):
 #Callback method for neighbor roles
 def on_neighbor(client, userdata, msg):
     msg_type, value = parse_msg(msg)
-    print("msg_type={}, value={}".format(msg_type,value))
+    print("msg_type={}, value={}, state={}".format(msg_type,value,userdata.role.state))
     if (msg_type == userdata.role.rslt_flag) and (userdata.role.state == Neighbor.TEST):
         if value == Msg.true:
             # enter the field
@@ -322,27 +322,27 @@ def neighbor(client, userdata):
         if not userdata.pending:
             if userdata.role.state == Neighbor.INIT:
                 print("Set my flag true")
-                client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.FLAG
+                client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
             elif userdata.role.state == Neighbor.FLAG:
                 print("Set card to my turn")
-                client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.REQUEST
+                client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.REQUEST) and (not userdata.pending):
                 print("Requesting entry into field")
-                client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.TEST
+                client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.FIELD) and (not userdata.pending):
                 print("Gathering food")
                 sleep(1)
                 print("Exiting field")
-                client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.EXIT
+                client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.EXIT) and (not userdata.pending):
                 print("Set my flag to false")
-                client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.INIT
                 userdata.role.strength = Health.strong
+                client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
 
         # slow things down
         sleep(3)
