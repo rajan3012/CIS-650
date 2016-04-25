@@ -100,10 +100,10 @@ class Neighbor:
 ## MQTT settings
 #############################################
 class MQTT:
-    def __init__(self, my_uid, role):
+    def __init__(self, my_uid, role, my_sleepSettings):
         self.uid = my_uid
         self.role = role
-
+        self.sleepSettings = my_sleepSettings
         if role == Role.field:
             print("Configuring as a field")
             self.role = Field()
@@ -345,7 +345,9 @@ def neighbor(client, userdata):
                 client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
 
         # slow things down
-        sleep(3)
+        if userdata.role.sleepSettings != -1:
+            sleep(userdata.role.sleepSettings)
+        
 
         # check for messages
         client.loop()
@@ -367,9 +369,14 @@ def main():
     except ValueError:
         print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
         sys.exit()
+    temp = int(sys.argv[3])
+    if temp is not None:
+        my_sleepSettings = temp 
+    else: 
+        my_sleepSettings = -1
 
-    print("myUID={}, myRole={}".format(my_uid, my_role))
-    me = MQTT(my_uid, my_role)
+    print("myUID={}, myRole={}".format(my_uid, my_role, my_sleepSettings))
+    me = MQTT(my_uid, my_role, my_sleepSettings)
 
     try:
         # create a client instance
