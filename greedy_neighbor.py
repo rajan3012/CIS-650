@@ -256,8 +256,8 @@ def publish(client, userdata, topic, payload):
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
-
-    if not userdata.pending and userdata.queue.empty() > 0:
+    print("checking queue for messages to send")
+    if not userdata.pending and not userdata.queue.empty():
         topic, payload = userdata.queue.get()
         userdata.pending = True
         client.publish(topic, payload, userdata.qos)
