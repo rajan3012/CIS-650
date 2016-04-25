@@ -9,7 +9,6 @@ usage: greedy_neighbor.py <UID> <field(0), gate(1), neighbor1(2) , neighbor2(3)>
 import sys
 from time import sleep
 import paho.mqtt.client as mqtt
-from Queue import Queue
 
 
 class Role:
@@ -135,7 +134,7 @@ class MQTT:
         self.abort = False
 
         # queue of outgoing messages
-        self.queue = Queue()
+        self.queue = []
         self.pending = False # waiting for a publish confirmation
 
 ##############################################
@@ -251,15 +250,15 @@ def parse_msg(msg):
 def publish(client, userdata, topic, payload):
 
     if userdata.pending:
-        userdata.queue.put( (topic, payload) )
+        userdata.queue.append( (topic, payload) )
     elif len(userdata.queue) == 0:
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
 
     if not userdata.pending and len(userdata.queue) > 0:
-        topic, payload = userdata.queue.get()
-        userdata.pending = True
+        topic, payload = userdata.queue.pop()
+        userdata.pending == True
         client.publish(topic, payload, userdata.qos)
 
 def parse_msg(msg):
