@@ -250,14 +250,14 @@ def parse_msg(msg):
 
 def publish(client, userdata, topic, payload):
 
-    if userdata.pending or not userdata.queue.empty():
+    if userdata.pending:
         userdata.queue.put( (topic, payload) )
-    else:
+    elif len(userdata.queue) == 0:
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
 
-    if not userdata.pending and userdata.queue.empty() > 0:
+    if not userdata.pending and len(userdata.queue) > 0:
         topic, payload = userdata.queue.get()
         userdata.pending = True
         client.publish(topic, payload, userdata.qos)
