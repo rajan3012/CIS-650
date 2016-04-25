@@ -20,18 +20,18 @@ class Role:
 class Msg:
     false           = '0'
     true            = '1'
-    set_flag1_true  = '1'
-    set_flag1_false = '2'
-    set_flag2_true  = '3'
-    set_flag2_false = '4'
-    test_flag1      = '5'
-    set_card_1      = '6'
-    set_card_2      = '7'
-    rslt_flag1      = '8'
-    test_flag2      = '9'
-    rslt_flag2      = 'a'
-    enter_field     = 'b'
-    exit_field      = 'c'
+    set_flag1_true  = '2'
+    set_flag1_false = '3'
+    set_flag2_true  = '4'
+    set_flag2_false = '5'
+    test_flag1      = '6'
+    set_card_1      = '7'
+    set_card_2      = '8'
+    rslt_flag1      = '9'
+    test_flag2      = 'a'
+    rslt_flag2      = 'b'
+    enter_field     = 'c'
+    exit_field      = 'd'
 
 
 class Health:
@@ -50,8 +50,8 @@ class Gate:
 
     def __init__(self):
         self.id = Role.gate
-        self.flag1 = False
-        self.flag2 = False
+        self.flag1 = Msg.false
+        self.flag2 = Msg.false
         self.card = -1
 
 class Neighbor:
@@ -117,6 +117,7 @@ class MQTT:
             print("Configuring as Neighbor 2")
             self.role = Neighbor(role)
 
+        self.broker = "white0"
         self.port = 1883
 
         # topics
@@ -166,29 +167,30 @@ def on_message(client, userdata, msg):
 
 def on_gate(client, userdata, msg):
     print("Gate | Received message: " + str(msg.payload) + "on topic: " + msg.topic)
+    print("flag1={}, flag2={}, card={}".format(userdata.role.flag1,userdata.role.flag2,userdata.role.card))
     #message_name, uid, flag_value , turn = parse_msg(msg.payload)
     msg_type , value = parse_msg(msg)
     #if(flag_value == 'True'): #neighbour is trying to enter the field
 
     # do something with message
     if (msg_type == Msg.set_flag1_true) :#and (userdata.role.state == Neighbor.TEST): #if flag1 is true
-        Gate.flag1 = Msg.true
+        userdata.role.flag1 = Msg.true
     elif (msg_type == Msg.set_flag1_false):  # and (userdata.role.state == Neighbor.TEST): #if flag1 is true
-        Gate.flag1 = Msg.false
+        userdata.role.flag1 = Msg.false
 
     elif (msg_type == Msg.set_flag2_true):
-        Gate.flag2 = Msg.true
+        userdata.role.flag2 = Msg.true
     elif (msg_type == Msg.set_flag2_false):
-        Gate.flag2 = Msg.false
+        userdata.role.flag2 = Msg.false
 
     elif (msg_type == Msg.set_card_1):
-        Gate.card = 1
+        userdata.role.card = 1
     elif (msg_type == Msg.set_card_2):
-        Gate.card = 2
+        userdata.role.card = 2
 
 
     elif (msg_type == Msg.test_flag1):
-        if(Gate.flag1 == Msg.true and Gate.card==1):
+        if(userdata.role.flag1 == Msg.true and userdata.role.card==1):
             print("N1 in field. Wait your turn N2")
             client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.false)
         else:
@@ -196,7 +198,7 @@ def on_gate(client, userdata, msg):
             client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.true)
 
     elif (msg_type == Msg.test_flag2):
-        if (Gate.flag2 == True and Gate.card == 2):
+        if (userdata.role.flag2 == Msg.true and userdata.role.card == 2):
             print("N2 in field. Wait your turn N1")
             client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.false)
         else:
@@ -207,13 +209,15 @@ def on_gate(client, userdata, msg):
 #Callback method for neighbor roles
 def on_neighbor(client, userdata, msg):
     msg_type, value = parse_msg(msg)
-    if (msg_type == userdata.role.send_rslt) and (userdata.role.state == Neighbor.TEST):
-        if value == Msg.True:
+    print("msg_type={}, value={}, state={} role.rslt_flag={}".format(msg_type,value,userdata.role.state,userdata.role.rslt_flag))
+    if (msg_type == userdata.role.rslt_flag) and (userdata.role.state == Neighbor.TEST):
+        if value == int(Msg.true):
             # enter the field
             print("Entering the field")
             client.publish(userdata.field_topic, Msg.enter_field + ':' + str(userdata.uid))
             userdata.role.state = Neighbor.FIELD
         else:
+            print("Neighbor is still in the field")
             userdata.role.state = Neighbor.REQUEST
 
 def on_field(client, userdata, msg):
@@ -252,13 +256,13 @@ def publish(client, userdata, topic, payload):
 
 def check_publish_queue(client, userdata):
 
-    if not userdata.pending & len(userdata.queue) > 0:
+    if not userdata.pending and len(userdata.queue) > 0:
         topic, payload = userdata.queue.pop()
         userdata.pending == True
         client.publish(topic, payload, userdata.qos)
 
 def parse_msg(msg):
-    msg_list = msg.split(':')
+    msg_list = msg.payload.split(':')
     message_name = msg_list[0]
     uid = int(msg_list[1])
     return message_name, uid
@@ -284,7 +288,7 @@ def gate(client, userdata):
 
     #main processing loop
     while not userdata.abort:
-        check_publish_queue(client, userdata.qos)
+        check_publish_queue(client, userdata)
         #do something
         client.loop()
 
@@ -298,7 +302,6 @@ def neighbor(client, userdata):
 
     def strong():
         # returns true if strong. derive some function
-        # to determine whether doing chores or getting
         # food
         return userdata.role.strength == Health.strong
 
@@ -309,7 +312,7 @@ def neighbor(client, userdata):
     while not userdata.abort:
 
         # sending any queued messages
-        check_publish_queue(client, userdata.qos)
+        check_publish_queue(client, userdata)
 
         if strong():
             print("Feeling strong, doing chores")
@@ -319,27 +322,30 @@ def neighbor(client, userdata):
         if not userdata.pending:
             if userdata.role.state == Neighbor.INIT:
                 print("Set my flag true")
-                client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.FLAG
+                client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
             elif userdata.role.state == Neighbor.FLAG:
                 print("Set card to my turn")
+                userdata.role.state = Neighbor.REQUEST
                 client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
-                userdata.role.state = Neighbor.RQST
-            elif (userdata.role.state == Neighbor.RQST) and (not userdata.pending):
+            elif (userdata.role.state == Neighbor.REQUEST) and (not userdata.pending):
                 print("Requesting entry into field")
-                client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.TEST
-            elif (userdata.role.stat == Neighbor.FIELD) and (not userdata.pending):
+                client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
+            elif (userdata.role.state == Neighbor.FIELD) and (not userdata.pending):
                 print("Gathering food")
                 sleep(1)
                 print("Exiting field")
-                client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.EXIT
-            elif (userdata.role.stat == Neighbor.EXIT) and (not userdata.pending):
+                client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
+            elif (userdata.role.state == Neighbor.EXIT) and (not userdata.pending):
                 print("Set my flag to false")
-                client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
                 userdata.role.state = Neighbor.INIT
                 userdata.role.strength = Health.strong
+                client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
+
+        # slow things down
+        sleep(3)
 
         # check for messages
         client.loop()
