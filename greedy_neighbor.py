@@ -9,7 +9,7 @@ usage: greedy_neighbor.py <UID> <field(0), gate(1), neighbor1(2) , neighbor2(3)>
 import sys
 from time import sleep
 import paho.mqtt.client as mqtt
-from Queue import Queue
+from Queue import Queue, Empty
 
 
 class Role:
@@ -250,15 +250,19 @@ def parse_msg(msg):
 
 def publish(client, userdata, topic, payload):
 
-    if userdata.pending:
-        userdata.queue.put( (topic, payload) )
-    elif len(userdata.queue) == 0:
+    if userdata.pending or not userdata.queue.empty():
+        userdata.queue.put( (topic, payload) )  # this is a blocking put
+    else: # if the queue is empty and nothing pending just go ahead and publish
+        userdata.pending = True
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
 
-    if not userdata.pending and len(userdata.queue) > 0:
-        topic, payload = userdata.queue.get()
+    if not userdata.pending and not userdata.queue.empty():
+        try:
+            topic, payload = userdata.queue.get()
+        except Empty:
+            return # nothing to do
         userdata.pending = True
         client.publish(topic, payload, userdata.qos)
 
