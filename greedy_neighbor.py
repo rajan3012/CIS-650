@@ -403,7 +403,7 @@ def main():
     except (KeyboardInterrupt):
         print "Interrupt received"
     except (RuntimeError):
-        print "Runtime Error"b j
+        print "Runtime Error"
         client.disconnect()
 
 if __name__ == "__main__":
