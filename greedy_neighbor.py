@@ -202,7 +202,7 @@ def on_gate(client, userdata, msg):
 #Callback method for neighbor roles
 def on_neighbor(client, userdata, msg):
     msg_type, value = parse_msg(msg)
-    print("msg_type={}, value={}, state={} role.rslt_flag={}".format(msg_type,value,userdata.role.state,userdata.role.rslt_flag))
+    #print("msg_type={}, value={}, state={} role.rslt_flag={}".format(msg_type,value,userdata.role.state,userdata.role.rslt_flag))
     if (msg_type == userdata.role.rslt_flag) and (userdata.role.state == Neighbor.TEST):
         if value == int(Msg.true):
             # enter the field
