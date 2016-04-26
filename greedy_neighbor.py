@@ -241,21 +241,24 @@ def parse_msg(msg):
     return message_name, uid
 
 def publish(client, userdata, topic, payload):
-
+    print("Entered publish with {}/{}".foramt(topic,payload))
     if userdata.pending or not userdata.queue.empty():
+        print("Queueing message")
         userdata.queue.put( (topic, payload) )  # this is a blocking put
     else: # if the queue is empty and nothing pending just go ahead and publish
+        print("Sending message straight out")
         userdata.pending = True
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
-
+    print("Checking for queued messages")
     if not userdata.pending and not userdata.queue.empty():
         try:
             topic, payload = userdata.queue.get()
         except Empty:
             return # nothing to do
         userdata.pending = True
+        print("Sending queued message")
         client.publish(topic, payload, userdata.qos)
 
 def parse_msg(msg):
