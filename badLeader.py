@@ -291,8 +291,8 @@ def main():
 
         # initiate first publish of ID for leader election
         if myMQTT.UID == 0 : # bad leader
-        	print "This UID is the bad leader = ".fromat(myMQTT.UID)
-            send_leader(client, myMQTT, myMQTT.UID)
+        	#print "This UID is the bad leader = {}".fromat(myMQTT.UID)
+        	send_leader(client, myMQTT, myMQTT.UID)
             working(client, myMQTT)
         else:
             send_uid(client, myMQTT, myMQTT.UID)
