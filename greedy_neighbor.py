@@ -246,6 +246,7 @@ def publish(client, userdata, topic, payload):
         userdata.queue.put( (topic, payload) )  # this is a blocking put
     else: # if the queue is empty and nothing pending just go ahead and publish
         userdata.pending = True
+        print("Publishing {},{}".format(topic, payload))
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
@@ -255,6 +256,7 @@ def check_publish_queue(client, userdata):
         except Empty:
             return # nothing to do
         userdata.pending = True
+        print("Publishing {},{}".format(topic, payload))
         client.publish(topic, payload, userdata.qos)
 
 #############################################
