@@ -64,7 +64,7 @@ class Neighbor:
     FIELD   = 5
     EXIT    = 6
 
-    def __init__(self, n):
+    def __init__(self, n, my_sleep_setting=-1):
         self.id = None
         if n == Role.neigh1:
             self.id = Role.neigh1
@@ -73,6 +73,7 @@ class Neighbor:
 
         self.strength = Health.strong
         self.state = Neighbor.INIT
+        self.sleep_setting = my_sleep_setting
 
         self.send_set_flag_false = None
         self.send_set_flag_true = None
@@ -99,7 +100,7 @@ class Neighbor:
 ## MQTT settings
 #############################################
 class MQTT:
-    def __init__(self, my_uid, role):
+    def __init__(self, my_uid, role, my_sleep_setting):
         self.uid = my_uid
         self.role = role
 
@@ -113,8 +114,8 @@ class MQTT:
             print("Configuring as Neighbor 1")
             self.role = Neighbor(role)
         elif role == Role.neigh2:
-            print("Configuring as Neighbor 2")
-            self.role = Neighbor(role)
+            print("Configuring as Neighbor 2 with sleep setting {}".format(my_sleep_setting))
+            self.role = Neighbor(role, my_sleep_setting)
 
         self.broker = "white0"
         self.port = 1883
@@ -302,6 +303,13 @@ def neighbor(client, userdata):
             print("Feeling strong, doing chores")
             do_chores()
 
+        # option to make one neighbor behave slower
+        # only when not trying to enter the field
+        if userdata.role.state == Neighbor.INIT:
+            if userdata.role.sleep_setting != -1:
+                print("Sleeping for: {}".format(userdata.role.sleep_settings))
+                sleep(userdata.role.sleep_setting)
+
         # get some food when not doing chores and feeling weak
         if not userdata.pending:
             if userdata.role.state == Neighbor.INIT:
@@ -329,7 +337,7 @@ def neighbor(client, userdata):
                 publish(client, userdata, userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
 
         # slow things down
-        sleep(3)
+        sleep(2)
 
         # check for messages to publish and receive
         client.loop()
@@ -341,19 +349,24 @@ def neighbor(client, userdata):
 
 def main():
 
-    if len(sys.argv) != 3:
+    # default value for sleep_setting is -1 (i.e. do not use)
+    my_sleep_setting = -1
+
+    if len(sys.argv) < 3:
         print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
         sys.exit()
 
     try:
         my_uid = int(sys.argv[1])
         my_role = int(sys.argv[2])
+        if len(sys.argv) > 3:
+            my_sleep_setting = int(sys.argv[3])
     except ValueError:
         print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
         sys.exit()
 
-    print("myUID={}, myRole={}".format(my_uid, my_role))
-    me = MQTT(my_uid, my_role)
+    print("myUID={}, myRole={}, mySleep_setting={}".format(my_uid, my_role, my_sleep_setting))
+    me = MQTT(my_uid, my_role, my_sleep_setting)
 
     try:
         # create a client instance
