@@ -345,7 +345,7 @@ def neighbor(client, userdata):
                 publish(client, userdata, userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
 
         # slow things down
-        #sleep(3)
+        sleep(3)
 
         # check for messages
         client.loop()
