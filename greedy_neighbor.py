@@ -164,6 +164,7 @@ def on_message(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
     print('unfiltered message')
 
+#Callback method for gate role
 def on_gate(client, userdata, msg):
     print("Gate | Received message: " + str(msg.payload) + "on topic: " + msg.topic)
     print("flag1={}, flag2={}, card={}".format(userdata.role.flag1,userdata.role.flag2,userdata.role.card))
@@ -211,6 +212,7 @@ def on_neighbor(client, userdata, msg):
             print("Neighbor is still in the field")
             userdata.role.state = Neighbor.REQUEST
 
+#Callback method for field role
 def on_field(client, userdata, msg):
 
     msg_type, value = parse_msg(msg)
@@ -266,7 +268,6 @@ def field(client, userdata):
     while not userdata.abort:
         client.loop()
 
-
 def gate(client, userdata):
 
     client.message_callback_add(userdata.gate_topic, on_gate)
@@ -275,10 +276,7 @@ def gate(client, userdata):
     #main processing loop
     while not userdata.abort:
         check_publish_queue(client, userdata)
-        #do something
         client.loop()
-
-
 
 def neighbor(client, userdata):
 
@@ -304,7 +302,7 @@ def neighbor(client, userdata):
             print("Feeling strong, doing chores")
             do_chores()
 
-        # get some food when not doing chores
+        # get some food when not doing chores and feeling weak
         if not userdata.pending:
             if userdata.role.state == Neighbor.INIT:
                 print("Set my flag true")
@@ -333,7 +331,7 @@ def neighbor(client, userdata):
         # slow things down
         sleep(3)
 
-        # check for messages
+        # check for messages to publish and receive
         client.loop()
 
 
