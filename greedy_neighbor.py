@@ -328,26 +328,26 @@ def neighbor(client, userdata):
             if userdata.role.state == Neighbor.INIT:
                 print("Set my flag true")
                 userdata.role.state = Neighbor.FLAG
-                client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
+                publish(client, userdata, userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
             elif userdata.role.state == Neighbor.FLAG:
                 print("Set card to my neighbor's turn")
                 userdata.role.state = Neighbor.REQUEST
-                client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
+                publish(client, userdata, userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.REQUEST):
                 print("Requesting entry into field")
                 userdata.role.state = Neighbor.TEST
-                client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
+                publish(client, userdata, userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.FIELD):
                 print("Gathering food")
                 sleep(1)
                 print("Exiting field")
                 userdata.role.state = Neighbor.EXIT
-                client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
+                publish(client, userdata, userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.EXIT):
                 print("Set my flag to false")
                 userdata.role.state = Neighbor.INIT
                 userdata.role.strength = Health.strong
-                client.publish(userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
+                publish(client, userdata, userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
 
         # slow things down
         sleep(3)
