@@ -254,13 +254,6 @@ def check_publish_queue(client, userdata):
         userdata.pending = True
         client.publish(topic, payload, userdata.qos)
 
-def parse_msg(msg):
-    msg_list = msg.payload.split(':')
-    message_name = msg_list[0]
-    uid = int(msg_list[1])
-    return message_name, uid
-
-
 #############################################
 ## Role methods
 #############################################
