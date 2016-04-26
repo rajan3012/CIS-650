@@ -169,42 +169,34 @@ def on_message(client, userdata, msg):
 def on_gate(client, userdata, msg):
     print("Gate | Received message: " + str(msg.payload) + "on topic: " + msg.topic)
     print("flag1={}, flag2={}, card={}".format(userdata.role.flag1,userdata.role.flag2,userdata.role.card))
-    #message_name, uid, flag_value , turn = parse_msg(msg.payload)
     msg_type , value = parse_msg(msg)
-    #if(flag_value == 'True'): #neighbour is trying to enter the field
 
-    # do something with message
-    if (msg_type == Msg.set_flag1_true) :#and (userdata.role.state == Neighbor.TEST): #if flag1 is true
+    if (msg_type == Msg.set_flag1_true):
         userdata.role.flag1 = Msg.true
-    elif (msg_type == Msg.set_flag1_false):  # and (userdata.role.state == Neighbor.TEST): #if flag1 is true
+    elif (msg_type == Msg.set_flag1_false):
         userdata.role.flag1 = Msg.false
-
     elif (msg_type == Msg.set_flag2_true):
         userdata.role.flag2 = Msg.true
     elif (msg_type == Msg.set_flag2_false):
         userdata.role.flag2 = Msg.false
-
     elif (msg_type == Msg.set_card_1):
         userdata.role.card = 1
     elif (msg_type == Msg.set_card_2):
         userdata.role.card = 2
-
-
     elif (msg_type == Msg.test_flag1):
         if(userdata.role.flag1 == Msg.true and userdata.role.card==1):
             print("N1 in field. Wait your turn N2")
-            client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.false)
+            publish(client, userdata, userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.false)
         else:
             print("N1 can enter the field")
-            client.publish(userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.true)
-
+            publish(client, userdata, userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.true)
     elif (msg_type == Msg.test_flag2):
         if (userdata.role.flag2 == Msg.true and userdata.role.card == 2):
             print("N2 in field. Wait your turn N1")
-            client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.false)
+            publish(client, userdata, userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.false)
         else:
             print("N2 can enter the field")
-            client.publish(userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.true)
+            publish(client, userdata, userdata.gate_topic, Msg.rslt_flag2 + ':' + Msg.true)
 
 
 #Callback method for neighbor roles
