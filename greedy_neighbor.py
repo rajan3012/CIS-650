@@ -235,7 +235,7 @@ def on_field(client, userdata, msg):
 #############################################
 
 def parse_msg(msg):
-    msg_list = msg.split(':')
+    msg_list = msg.payload.split(':')
     message_name = msg_list[0]
     uid = int(msg_list[1])
     return message_name, uid
