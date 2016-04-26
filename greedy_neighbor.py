@@ -307,7 +307,7 @@ def neighbor(client, userdata):
         # only when not trying to enter the field
         if userdata.role.state == Neighbor.INIT:
             if userdata.role.sleep_setting != -1:
-                print("Sleeping for: {}".format(userdata.role.sleep_settings))
+                print("Sleeping for: {}".format(userdata.role.sleep_setting))
                 sleep(userdata.role.sleep_setting)
 
         # get some food when not doing chores and feeling weak
