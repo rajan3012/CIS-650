@@ -94,7 +94,7 @@ class Neighbor:
             self.send_set_flag_true = Msg.set_flag2_true
             self.send_set_card = Msg.set_card_1
             self.send_test_flag = Msg.test_flag1
-            self.rslt_flag = Msg.rslt_flag2
+            self.rslt_flag = Msg.rslt_flag1
 
 
 #############################################
