@@ -153,7 +153,7 @@ def on_connect(client, userdata, flags, rc):
 #Called when a published message has completed transmission to the broker
 def on_publish(client, userdata, mid):
     print("Message ID "+str(mid)+ " successfully published")
-    userdata.pending == False
+    userdata.pending = False
 
 
 #Called when message received on will_topic
