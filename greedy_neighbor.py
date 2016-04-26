@@ -217,7 +217,7 @@ def on_neighbor(client, userdata, msg):
 def on_field(client, userdata, msg):
 
     msg_type, value = parse_msg(msg)
-
+    print("Received msg id={}, type={}, value={}".format(msg.id, msg_type, value))
     if msg_type == Msg.enter_field:
         userdata.role.occupants.add(value)
         print("Neighbor {} has entered the field".format(value))
