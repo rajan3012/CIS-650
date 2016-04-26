@@ -313,7 +313,7 @@ def neighbor(client, userdata):
     client.message_callback_add(userdata.gate_topic, on_neighbor)
     client.subscribe(userdata.gate_topic, userdata.qos)
 
-    # Main processing loop, cycle between doing chors and getting food
+    # Main processing loop, cycle between doing chores and getting food
     while not userdata.abort:
 
         # sending any queued messages
@@ -330,20 +330,20 @@ def neighbor(client, userdata):
                 userdata.role.state = Neighbor.FLAG
                 client.publish(userdata.gate_topic, userdata.role.send_set_flag_true + ':' + str(userdata.uid))
             elif userdata.role.state == Neighbor.FLAG:
-                print("Set card to my turn")
+                print("Set card to my neighbor's turn")
                 userdata.role.state = Neighbor.REQUEST
                 client.publish(userdata.gate_topic, userdata.role.send_set_card + ':' + str(userdata.uid))
-            elif (userdata.role.state == Neighbor.REQUEST) and (not userdata.pending):
+            elif (userdata.role.state == Neighbor.REQUEST):
                 print("Requesting entry into field")
                 userdata.role.state = Neighbor.TEST
                 client.publish(userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
-            elif (userdata.role.state == Neighbor.FIELD) and (not userdata.pending):
+            elif (userdata.role.state == Neighbor.FIELD):
                 print("Gathering food")
                 sleep(1)
                 print("Exiting field")
                 userdata.role.state = Neighbor.EXIT
                 client.publish(userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
-            elif (userdata.role.state == Neighbor.EXIT) and (not userdata.pending):
+            elif (userdata.role.state == Neighbor.EXIT):
                 print("Set my flag to false")
                 userdata.role.state = Neighbor.INIT
                 userdata.role.strength = Health.strong
