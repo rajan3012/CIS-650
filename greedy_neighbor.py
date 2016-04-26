@@ -241,7 +241,7 @@ def parse_msg(msg):
     return message_name, uid
 
 def publish(client, userdata, topic, payload):
-    print("Entered publish with {}/{}".foramt(topic,payload))
+    print("Entered publish with {}/{}".format(topic,payload))
     if userdata.pending or not userdata.queue.empty():
         print("Queueing message")
         userdata.queue.put( (topic, payload) )  # this is a blocking put
