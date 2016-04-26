@@ -11,7 +11,6 @@ from time import sleep
 import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 
-
 class Role:
     field  = 0
     gate   = 1
@@ -40,7 +39,6 @@ class Health:
     weak   = 1
 
 class Field:
-
 
     def __init__(self):
         self.id = Role.field
@@ -135,7 +133,7 @@ class MQTT:
         self.abort = False
 
         # queue of outgoing messages
-        self.queue = Queue()
+        self.queue = []
         self.pending = False # waiting for a publish confirmation
 
 ##############################################
@@ -184,7 +182,7 @@ def on_gate(client, userdata, msg):
     elif (msg_type == Msg.set_card_2):
         userdata.role.card = 2
     elif (msg_type == Msg.test_flag1):
-        if(userdata.role.flag1 == Msg.true and userdata.role.card==1):
+        if(userdata.role.flag1 == Msg.true and userdata.role.card == 1):
             print("N1 in field. Wait your turn N2")
             publish(client, userdata, userdata.gate_topic, Msg.rslt_flag1 + ':' + Msg.false)
         else:
@@ -241,24 +239,19 @@ def parse_msg(msg):
     return message_name, uid
 
 def publish(client, userdata, topic, payload):
-    #print("Entered publish with {}/{}".format(topic,payload))
     if userdata.pending or not userdata.queue.empty():
-      #print("Queueing message")
         userdata.queue.put( (topic, payload) )  # this is a blocking put
     else: # if the queue is empty and nothing pending just go ahead and publish
-        #print("Sending message straight out")
         userdata.pending = True
         client.publish(topic, payload, userdata.qos)
 
 def check_publish_queue(client, userdata):
-    #print("Checking for queued messages")
     if not userdata.pending and not userdata.queue.empty():
         try:
             topic, payload = userdata.queue.get()
         except Empty:
             return # nothing to do
         userdata.pending = True
-        #print("Sending queued message")
         client.publish(topic, payload, userdata.qos)
 
 def parse_msg(msg):
@@ -403,7 +396,7 @@ def main():
     except (KeyboardInterrupt):
         print "Interrupt received"
     except (RuntimeError):
-        print "Runtime Error"
+        print "Runtime Error"b j
         client.disconnect()
 
 if __name__ == "__main__":
