@@ -133,7 +133,7 @@ class MQTT:
         self.abort = False
 
         # queue of outgoing messages
-        self.queue = []
+        self.queue = Queue()
         self.pending = False # waiting for a publish confirmation
 
 ##############################################
