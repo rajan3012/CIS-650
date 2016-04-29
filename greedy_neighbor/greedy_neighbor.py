@@ -284,7 +284,7 @@ def gate(client, userdata):
 def neighbor(client, userdata):
 
     def do_chores():
-        sleep(1)
+        sleep(0.30)
         userdata.role.strength = Health.weak
 
     def strong():
@@ -328,7 +328,7 @@ def neighbor(client, userdata):
                 publish(client, userdata, userdata.gate_topic, userdata.role.send_test_flag + ':' + str(userdata.uid))
             elif (userdata.role.state == Neighbor.FIELD):
                 print("Gathering food")
-                sleep(1)
+                sleep(0.30)
                 print("Exiting field")
                 userdata.role.state = Neighbor.EXIT
                 publish(client, userdata, userdata.field_topic, Msg.exit_field + ':' + str(userdata.uid))
@@ -339,7 +339,7 @@ def neighbor(client, userdata):
                 publish(client, userdata, userdata.gate_topic, userdata.role.send_set_flag_false + ':' + str(userdata.uid))
 
         # slow things down
-        sleep(1)
+        sleep(0.30)
 
         # check for messages to publish and receive
         client.loop()
