@@ -86,6 +86,7 @@ def on_topic(client, userdata, msg):
         if message_name == 'send_id':
             decide(client, userdata, uid)
         elif message_name == 'send_leader':
+            print "Accepted {} as my leader".format(userdata.leader)
             send_leader(client, userdata, uid)
             working(client, userdata)
 
