@@ -291,9 +291,8 @@ def main():
 
         # initiate first publish of ID for leader election
         if myMQTT.UID == 0:
-            send_leader(client, myMQTT, myMQTT.UID)
-            myMQTT.leader = myMQTT.UID
-            working(client, myMQTT)
+            # bad leader, take over session by announcing 'I am leader'
+            announce(client, myMQTT)
         else:
             send_uid(client, myMQTT, myMQTT.UID)
 
