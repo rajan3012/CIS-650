@@ -21,7 +21,7 @@ typedef struct Message {
   byte dst_uid;
   byte message_name;
   byte payload[MSG_SIZE - 3];
-} message_t;
+} __attribute__((pack)) message_t;
 
 typedef struct Generic_Message {
   byte src_uid;

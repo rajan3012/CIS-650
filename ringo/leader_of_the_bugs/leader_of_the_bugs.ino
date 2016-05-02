@@ -45,7 +45,6 @@ message_t *msg = (message_t*) buf;
             send_uid(roberts, uid);
         }
     }
-
     else if (roberts->state == s_waiting) {
         //print "in wait--- msg received: {}".format(msg.payload)
         if (msg->message_name == msg_names.send_leader) {
@@ -53,7 +52,6 @@ message_t *msg = (message_t*) buf;
             working(roberts);
         }
     }
-
     else if (roberts->state == s_working) {
     }
     else {
@@ -117,7 +115,6 @@ void passive(roberts_t *roberts) {
     roberts->state = s_passive;
 }
 
-
 void wait(roberts_t *roberts) {
     //print("State changed to wait for round trip")
     roberts->state = s_waiting;
@@ -144,7 +141,7 @@ void send_leader(roberts_t *roberts, byte uid) {
     msg->message_name = msg_names.send_leader;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
-    ringo_transmit( roberts->uid, roberts->downstream_uid, (byte*) msg);
+    ringo_transmit(roberts->uid, roberts->downstream_uid, (byte*) msg);
     free(msg);
 }
 
@@ -263,8 +260,15 @@ void ringo_receive(roberts_t *roberts, void (*handler) (roberts_t *roberts, byte
         Serial.print(roberts->uid, HEX);
         Serial.print(" received IR message from "); Serial.println(sender, HEX);
         // Print just the payload
-        Serial.println(msg->src_uid,HEX);
-        Serial.println(msg->dst_uid,HEX);
+        Serial.print("src_uid: ");
+        Serial.print(msg->src_uid,HEX);
+        Serial.print(", dst_uid: ");
+        Serial.print(msg->dst_uid,HEX);
+        Serial.print(", message_name: ");
+        Serial.print(msg->message_name,HEX);
+        Serial.print(", payload[0]: ");
+        Serial.println(msg->payload[0],HEX);
+        
         ResetIR(MSG_SIZE);
      
         if (msg->dst_uid == roberts->uid) {
