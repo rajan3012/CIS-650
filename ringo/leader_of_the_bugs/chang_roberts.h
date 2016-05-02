@@ -26,6 +26,7 @@ typedef struct Message {
 typedef struct Generic_Message {
   byte src_uid;
   byte dst_uid;
+  byte message_name;
 } generic_message_t;
 
 struct Messasge_Names {
@@ -37,20 +38,19 @@ struct Messasge_Names {
 
 
 // function declartions
-void decide(roberts_t &roberts, byte uid);
-extern void announce(roberts_t &roberts);
-extern void working(roberts_t &roberts);
-extern void active(roberts_t &roberts);
-extern void passive(roberts_t &roberts);
-extern void wait(roberts_t &roberts);
-extern void send_uid(roberts_t &roberts, byte uid);
-extern void send_leader(roberts_t &roberts, byte uid);
-extern void send_primes(roberts_t &roberts, unsigned int lower_bound,  unsigned int count);
+void decide(roberts_t *roberts, byte uid);
+extern void announce(roberts_t *roberts);
+extern void working(roberts_t *roberts);
+extern void active(roberts_t *roberts);
+extern void passive(roberts_t *roberts);
+extern void wait(roberts_t *roberts);
+extern void send_uid(roberts_t *roberts, byte uid);
+extern void send_leader(roberts_t *roberts, byte uid);
+extern void send_primes(roberts_t *roberts, unsigned int lower_bound,  unsigned int count);
 extern void count_primes(unsigned int lower_bound, unsigned int upper_bound);
-extern void ringo_transmit(message_t &msg);
-extern void ringo_receive(byte my_uid, void (*handler) (void *userdata, message_t msg));
-extern void roberts_rcv(void *userdata, message_t msg);
-extern void on_topic(roberts_t &roberts, message_t msg);
+extern void ringo_transmit(byte src_uid, byte dst_uid, byte *buf);
+extern void ringo_receive(roberts_t* roberts, void (*handler) (void *userdata, byte *buf));
+extern void on_topic(roberts_t *roberts, byte *buf);
 
 
 #endif
