@@ -36,7 +36,7 @@ struct Messasge_Names {
 
 
 
-// forward declartions
+// function declartions
 void decide(roberts_t &roberts, byte uid);
 extern void announce(roberts_t &roberts);
 extern void working(roberts_t &roberts);
@@ -48,7 +48,7 @@ extern void send_leader(roberts_t &roberts, byte uid);
 extern void send_primes(roberts_t &roberts, unsigned int lower_bound,  unsigned int count);
 extern void count_primes(unsigned int lower_bound, unsigned int upper_bound);
 extern void ringo_transmit(message_t &msg);
-extern void ringo_receive(byte my_uid, void (*handler) (void *userdata, message_t msg);
+extern void ringo_receive(byte my_uid, void (*handler) (void *userdata, message_t msg));
 extern void roberts_rcv(void *userdata, message_t msg);
 extern void on_topic(roberts_t &roberts, message_t msg);
 
