@@ -220,21 +220,27 @@ void loop() {
     // else-if blocks for each state
     if (roberts->state == s_active) {
         // active state main loop code goes here
+        OnEyes(0,255,255); // cyan
     }
     else if (roberts->state == s_announce) {
         // announce state main loop code goes here
+        OnEyes(255,128,0); // orange
     }
     else if (roberts->state == s_deciding) {
         // decide state main loop code goes here
+        OnEyes(127,0,255); // purple
     }
     else if (roberts->state == s_passive) {
         // passive state main loop code goes here
+        OnEyes(255,255,0); // yellow
     }
     else if (roberts->state == s_waiting) {
         // waiting state main loop code goes here
+        OnEyes(255,0,0); // red
     }
     else if (roberts->state == s_working) {
         // working state main loop code goes here
+        OnEyes(0,255,0); // green
     }
     else {
     }
