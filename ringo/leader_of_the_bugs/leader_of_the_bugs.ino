@@ -252,7 +252,9 @@ void loop() {
     }
     else {
     }
-      
+
+    delay(1000);
+    
     byte sender = IR_receive(roberts->uid, roberts, &on_topic, buf, MSG_SIZE);
 
     // make some noise if we received and processed a message
