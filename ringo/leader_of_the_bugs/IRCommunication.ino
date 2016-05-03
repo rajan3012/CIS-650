@@ -26,7 +26,7 @@ int ReceiveIRMsg(byte &sender, byte recipient, byte *msg, short size) {
     RxIRStop();         //stop the receiving function
     // The first byte is always 0x00
     // First, check that recipient matches what is expected, that is always the second byte
-    if (IRBytes[1] != recipient) {
+    if ((IRBytes[1] != recipient) || (IRBytes[1] != IR_BROADCAST)) {
       RxIRRestart(size + HEADER_SIZE);
       return 0; // the message is not for me
     }

@@ -24,7 +24,7 @@ void on_topic(void *userdata, byte *buf) {
     message_t *msg = (message_t*) buf;
 
     // check whether this message is for me
-    if (msg->dst_uid != roberts->uid) {
+    if ((msg->dst_uid != roberts->uid) && (msg->dst_uid != IR_BROADCAST)) {
       return;
     }
 

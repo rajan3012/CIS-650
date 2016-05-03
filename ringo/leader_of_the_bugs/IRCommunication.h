@@ -5,6 +5,7 @@
 #define __IRCommunication_H
 
 #define HEADER_SIZE 3
+#define IR_BROADCAST 0xFF
 
 byte irmsg[20]; // max in RingoHardware is 20, including header
 
