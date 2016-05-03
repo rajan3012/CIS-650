@@ -34,46 +34,52 @@ void on_topic(void *userdata, byte *buf) {
     Serial.print(", dst_uid: ");
     Serial.print(gmsg->dst_uid,HEX);
     Serial.print(", message_type: ");
-    Serial.print(gmsg->message_type,HEX);
-    Serial.print(", payload[0]: ");
-    Serial.println(gmsg->payload[0],HEX);
+    Serial.println(gmsg->message_type,HEX);
 
     if ((roberts->state != s_working) && (gmsg->message_type != msg_types.working)) {
       cr_message_t *msg = (cr_message_t*) buf;
       
         if (roberts->state == s_active) {
-            //print "in active -- msg received: {}".format(msg.payload)
+            Serial.print("in active");
             byte uid = msg->payload[0];
             if (msg->message_name == msg_names.send_id) {
+                Serial.print(" rcvd uid=");
+                Serial.println(uid,HEX);
                 decide(roberts, uid);
             }
             else if (msg->message_name == msg_names.send_leader) {
+                Serial.print(" rcvd leader uid=");
+                Serial.println(uid,HEX);
                 send_leader(roberts, uid);
                 working(roberts);
             }
         }
         else if (roberts->state == s_passive) {
+            Serial.print("in passive");
             byte uid = msg->payload[0];
             if (msg->message_name == msg_names.send_leader) {
-                roberts->leader = msg->payload[0];
-                //print "Accepted {} as my leader".format(roberts.leader)
+                Serial.print(" rcvd leader uid=");
+                Serial.println(uid,HEX);
+                roberts->leader = uid;
                 send_leader(roberts, uid);
                 working(roberts);
             }
             else if (msg->message_name == msg_names.send_id) {
+                Serial.print(" rcvd uid=");
+                Serial.println(uid,HEX);
                 send_uid(roberts, uid);
             }
         }
         else if (roberts->state == s_waiting) {
-            //print "in wait--- msg received: {}".format(msg.payload)
+            Serial.println("in waiting, I am the Leader");
             if (msg->message_name == msg_names.send_leader) {
-                //print "Leader announce has gone full circle"
                 working(roberts);
             }
         }
     }
     else if ((roberts->state == s_working) && (gmsg->message_type == msg_types.working)) {
-      wk_message_t *msg = (wk_message_t*) buf;
+        Serial.println("in working");
+        wk_message_t *msg = (wk_message_t*) buf;
       // TODO: add movement
     }
     else {
