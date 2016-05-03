@@ -51,7 +51,7 @@ int IR_transmit(byte src_uid, byte dst_uid, byte *msg, unsigned int size) {
     OnEyes(0,0,0);
     delay(100);
     
-    ResetIR(MSG_SIZE);
+    ResetIR(size);
       
     // Send a message to device with ID targetID 
     irmsg[0] = 0x00;                  // all messages begin with 0x00
@@ -64,7 +64,7 @@ int IR_transmit(byte src_uid, byte dst_uid, byte *msg, unsigned int size) {
     RxIRRestart(size + HEADER_SIZE);
 
     // To receive above message on ID 0x02 Ringo, issue ReceiveIRMsg(senderID, 0x02, msg, MSG_SIZE);
-    ResetIR(MSG_SIZE); // Important!
+    ResetIR(size); // Important!
     delay(random(100,150));          // delay 1 second (1000 milliseconds = 1 second)
 }
 
@@ -77,10 +77,15 @@ byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, by
 
     if (!IsIRDone()) {      // will return "0" if no IR packet has been received
       RxIRRestart(size + HEADER_SIZE);
+      Serial.println("IR_receive gots nothing to report");
       return 0;
     }
     else {
       RxIRStop();         //stop the receiving function
+
+      Serial.print("IR_receive gots message from ");
+      Serial.println(IRBytes[1], HEX);
+      
       // The first byte is always 0x00
       // First, check that recipient matches what is expected, that is always the second byte
       if ((IRBytes[1] != my_uid) || (IRBytes[1] != IR_BROADCAST)) {
@@ -98,6 +103,7 @@ byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, by
   
       RxIRRestart(size + HEADER_SIZE);          //restart the IR Rx function before returning
 
+      
       handler(userdata, msg);
       return sender;
     }
