@@ -18,4 +18,8 @@ void SendIRMsg(byte sender, byte recipient, byte *msg, short size);
 
 int ReceiveIRMsg(byte &sender, byte recipient, byte *msg, short size);
 
+int IR_transmit(byte src_uid, byte dst_uid, byte *msg, unsigned int size);
+
+byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *msg), byte* msg, unsigned int size);
+
 #endif

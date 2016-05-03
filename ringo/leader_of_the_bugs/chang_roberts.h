@@ -68,7 +68,7 @@ extern void send_leader(roberts_t *roberts, byte uid);
 extern void send_primes(roberts_t *roberts, unsigned int lower_bound,  unsigned int count);
 extern void count_primes(unsigned int lower_bound, unsigned int upper_bound);
 extern void ringo_transmit(byte src_uid, byte dst_uid, byte *buf);
-extern void ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf));
+extern byte ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf));
 extern void on_topic(void *userdata, byte *buf);
 
 

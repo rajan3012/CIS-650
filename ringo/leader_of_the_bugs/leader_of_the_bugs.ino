@@ -208,7 +208,7 @@ void count_primes(unsigned int lower_bound, unsigned int upper_bound) {
 //## global variables
 //#############################################
 roberts_t *roberts = NULL;
-
+byte *buf = NULL;
 
 // Main loop, ringo_receive will call handlers which handles state changes
 // required for leader election.
@@ -245,8 +245,16 @@ void loop() {
     else {
     }
       
-    ringo_receive(roberts->uid, roberts, &on_topic);
-    
+    byte sender = ringo_receive(roberts->uid, roberts, &on_topic);
+
+    // make some noise if we received and processed a message
+    if (sender != 0) {
+        Serial.print(roberts->uid, HEX);
+        Serial.print(" received IR message from "); Serial.println(sender, HEX);
+        OnEyes(0,200,0);
+        PlayChirp(NOTE_FS3,40); delay(200); PlayChirp(NOTE_D4, 40); delay(200);
+        OffEyes();
+    }
 }
 
 
@@ -262,7 +270,8 @@ void setup() {
   randomSeed(analogRead(0));
   RestartTimer();
 
-  // Initialize roberts struct
+  // Initialize global data structures
+  buf = (byte*) calloc(MSG_SIZE, sizeof(byte));
   roberts = (roberts_t*) calloc(1,sizeof(roberts_t));
   roberts->uid = 0x05;
   roberts->downstream_uid = 0x06;
@@ -283,10 +292,9 @@ void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {
     delay(random(100,150));          // delay 1 second (1000 milliseconds = 1 second)
 }
 
-void ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf)) {
+byte ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf)) {
     byte *buf = (byte*) calloc(MSG_SIZE, sizeof(byte));
     byte sender;
-    bool done = 0;
     
     // put your code here inside the loop() function.  Here's a quick example that makes the eyes alternate colors....
     //if (!done) OnEyes(50,0,0);      // you can remove this stuff and put your own code here
@@ -301,8 +309,8 @@ void ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata,
         PlayChirp(NOTE_FS3,40); delay(200); PlayChirp(NOTE_D4, 40); delay(200);
         OffEyes();
         handler(userdata, buf);
-        done = 1;
     }
     free(buf);
+    return sender;
 }
 
