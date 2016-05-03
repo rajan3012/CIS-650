@@ -131,11 +131,9 @@ void working(roberts_t *roberts) {
 void active(roberts_t *roberts) {
     //print "State changed to active:{}".format(roberts.active)
     roberts->state = s_active;
-
+    send_uid(roberts, roberts->uid);
     if (roberts->is_active == false) {
-        roberts->state = s_active;
-        roberts->is_active = true;
-        send_uid(roberts, roberts->uid);
+         roberts->is_active = true;
     }
 }
 
@@ -224,11 +222,10 @@ void loop() {
 
     // else-if blocks for each state
     if (roberts->state == s_active) {
-        // active state main loop code goes here
+        // keep calling active() to continuously send uid
+        // until we hear from someone and change state
+        active(roberts);
         OnEyes(255,0,0); // red
-        if (roberts->is_active == false) {
-          active(roberts);
-        }
     }
     else if (roberts->state == s_announce) {
         // announce state main loop code goes here
