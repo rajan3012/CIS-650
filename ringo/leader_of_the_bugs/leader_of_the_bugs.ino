@@ -162,7 +162,7 @@ void send_uid(roberts_t *roberts, byte uid) {
     msg->message_name = msg_names.send_id;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
-    ringo_transmit(roberts->uid, roberts->downstream_uid, (byte*) msg);
+    IR_transmit(roberts->uid, roberts->downstream_uid, (byte*) msg, MSG_SIZE);
     free(msg);
 }
 
@@ -174,7 +174,7 @@ void send_leader(roberts_t *roberts, byte uid) {
     msg->message_name = msg_names.send_leader;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
-    ringo_transmit(roberts->uid, roberts->downstream_uid, (byte*) msg);
+    IR_transmit(roberts->uid, roberts->downstream_uid, (byte*) msg, MSG_SIZE);
     free(msg);
 }
 
@@ -184,7 +184,7 @@ void send_primes(roberts_t *roberts, unsigned int lower_bound,  unsigned int cou
     msg->command = msg_commands.count_primes;
     // encode lower_bound and count into payload
 
-    ringo_transmit( roberts->uid, roberts->downstream_uid, (byte*) msg);
+    IR_transmit( roberts->uid, roberts->downstream_uid, (byte*) msg, MSG_SIZE);
     free(msg);
 }
 
@@ -253,7 +253,7 @@ void loop() {
     else {
     }
       
-    byte sender = ringo_receive(roberts->uid, roberts, &on_topic);
+    byte sender = IR_receive(roberts->uid, roberts, &on_topic, buf, MSG_SIZE);
 
     // make some noise if we received and processed a message
     if (sender != 0) {
