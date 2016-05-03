@@ -49,8 +49,8 @@ int IR_transmit(byte src_uid, byte dst_uid, byte *msg, unsigned int size) {
 
     // turn off lights for transmitting
     OnEyes(0,0,0);
-    delay(100);
-    
+    delay(random(100,150));
+   
     ResetIR(size);
       
     // Send a message to device with ID targetID 
@@ -60,12 +60,11 @@ int IR_transmit(byte src_uid, byte dst_uid, byte *msg, unsigned int size) {
     for (int i = HEADER_SIZE; i < size + HEADER_SIZE; i++) {
       irmsg[i] = msg[i - HEADER_SIZE];
     }
+    
     TxIR(irmsg, size + HEADER_SIZE);                 // actually transmit via any enabled IR sources
-    RxIRRestart(size + HEADER_SIZE);
-
-    // To receive above message on ID 0x02 Ringo, issue ReceiveIRMsg(senderID, 0x02, msg, MSG_SIZE);
+    Serial.print("Transmited msg to ");
+    Serial.println(irmsg[1], HEX);
     ResetIR(size); // Important!
-    delay(random(100,150));          // delay 1 second (1000 milliseconds = 1 second)
 }
 
 byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *msg), byte* msg, unsigned int size) {
@@ -76,7 +75,7 @@ byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, by
     delay(100);
 
     if (!IsIRDone()) {      // will return "0" if no IR packet has been received
-      RxIRRestart(size + HEADER_SIZE);
+      ResetIR(size);
       Serial.println("IR_receive gots nothing to report");
       return 0;
     }
@@ -84,12 +83,14 @@ byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, by
       RxIRStop();         //stop the receiving function
 
       Serial.print("IR_receive gots message from ");
+      Serial.print(IRBytes[2], HEX);
+      Serial.print(" for ");
       Serial.println(IRBytes[1], HEX);
       
       // The first byte is always 0x00
       // First, check that recipient matches what is expected, that is always the second byte
-      if ((IRBytes[1] != my_uid) || (IRBytes[1] != IR_BROADCAST)) {
-        RxIRRestart(size + HEADER_SIZE);
+      if ((IRBytes[1] != my_uid) && (IRBytes[1] != IR_BROADCAST)) {
+        ResetIR(size);
         return 0; // the message is not for me
       }
      
@@ -101,10 +102,10 @@ byte IR_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, by
       for (int i = 0; i < size + HEADER_SIZE; i++)
         IRBytes[i] = 0;
   
-      RxIRRestart(size + HEADER_SIZE);          //restart the IR Rx function before returning
-
-      
+      ResetIR(size + HEADER_SIZE);          //restart the IR Rx function before returning
+     
       handler(userdata, msg);
+      
       return sender;
     }
 }
