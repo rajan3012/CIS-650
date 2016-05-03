@@ -289,6 +289,9 @@ void setup() {
 
 void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {
 
+    // turn off lights for Transmitting
+    OnEyes(0,0,0);
+    
     // Simple MSG_SIZE message sending exampled
     ResetIR(MSG_SIZE);
       
@@ -303,6 +306,9 @@ void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {
 byte ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf)) {
     byte *buf = (byte*) calloc(MSG_SIZE, sizeof(byte));
     byte sender;
+
+    // turn off lights for Receiving
+    OnEyes(0,0,0);
     
     // put your code here inside the loop() function.  Here's a quick example that makes the eyes alternate colors....
     //if (!done) OnEyes(50,0,0);      // you can remove this stuff and put your own code here
