@@ -2,7 +2,7 @@
 #ifndef __CHANG_ROBERTS_H__
 #define __CHANG_ROBERTS_H__
 
-#define MSG_SIZE 10
+#define MSG_SIZE 10  // can not exceed IR_MAX_MSG_SIZE - HEADER_SIZE
 typedef unsigned char state_t;
 
 
@@ -23,12 +23,12 @@ struct Message_Types {
 
 struct Messasge_Names {
   byte send_id = 0x00;
-  byte send_leader = 0x02;
+  byte send_leader = 0x01;
 } msg_names;
 
 struct Message_Commands {
   byte count_primes = 0x00;
-  byte move_forward = 0x0;
+  byte move_forward = 0x01;
 } msg_commands;
 
 typedef struct Generic_Message {
