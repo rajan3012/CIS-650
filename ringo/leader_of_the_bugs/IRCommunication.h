@@ -6,8 +6,9 @@
 
 #define HEADER_SIZE 3
 #define IR_BROADCAST 0xFF
+#define IR_MAX_MSG_SIZE 20 // max in RingoHardware is 20, including header
 
-byte irmsg[20]; // max in RingoHardware is 20, including header
+byte irmsg[IR_MAX_MSG_SIZE];
 
 void ResetIR(short size);
 
