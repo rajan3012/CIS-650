@@ -132,8 +132,9 @@ void active(roberts_t *roberts) {
     //print "State changed to active:{}".format(roberts.active)
     roberts->state = s_active;
 
-    // This allows a bad_leader attack. Better to remove it
     if (roberts->is_active == false) {
+        roberts->state = s_active;
+        roberts->is_active = true;
         send_uid(roberts, roberts->uid);
     }
 }
@@ -154,6 +155,8 @@ void wait(roberts_t *roberts) {
 ///################################################
 
 void send_uid(roberts_t *roberts, byte uid) {
+    Serial.print("Sending uid: ");
+    Serial.println(uid, HEX);
     cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
     msg->message_name = msg_names.send_id;
@@ -164,6 +167,8 @@ void send_uid(roberts_t *roberts, byte uid) {
 }
 
 void send_leader(roberts_t *roberts, byte uid) {
+    Serial.print("Sending leader: ");
+    Serial.println(uid, HEX);
     cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
     msg->message_name = msg_names.send_leader;
@@ -220,7 +225,10 @@ void loop() {
     // else-if blocks for each state
     if (roberts->state == s_active) {
         // active state main loop code goes here
-        OnEyes(0,255,255); // cyan
+        OnEyes(255,0,0); // red
+        if (roberts->is_active == false) {
+          active(roberts);
+        }
     }
     else if (roberts->state == s_announce) {
         // announce state main loop code goes here
@@ -236,7 +244,7 @@ void loop() {
     }
     else if (roberts->state == s_waiting) {
         // waiting state main loop code goes here
-        OnEyes(255,0,0); // red
+        OnEyes(0,255,255); // cyan
     }
     else if (roberts->state == s_working) {
         // working state main loop code goes here
@@ -275,15 +283,15 @@ void setup() {
   roberts = (roberts_t*) calloc(1,sizeof(roberts_t));
   roberts->uid = 0x05;
   roberts->downstream_uid = 0x06;
+  roberts->state = s_active;
+  roberts->is_active = false;
 }
 
 void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {
 
     // Simple MSG_SIZE message sending exampled
     ResetIR(MSG_SIZE);
-    
-    //OnEyes(0,50,50); // use eye color to indicate what the Ringo is doing, or state, etc. (this is just a placeholder)
-  
+      
     // Send a message to device with ID targetID 
     SendIRMsg(src_uid, dst_uid, buf, MSG_SIZE);
   
