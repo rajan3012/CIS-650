@@ -23,11 +23,12 @@ void on_topic(void *userdata, byte *buf) {
     roberts_t *roberts = (roberts_t*) userdata;
     gn_message_t *gmsg = (gn_message_t*) buf;
 
+/*
     // check whether this message is for me
     if ((gmsg->dst_uid != roberts->uid) && (gmsg->dst_uid != IR_BROADCAST)) {
       return;
     }
-
+*/
     Serial.print("Message = ");
     Serial.print(" src_uid: ");
     Serial.print(gmsg->src_uid,HEX);
@@ -157,6 +158,7 @@ void send_uid(roberts_t *roberts, byte uid) {
     Serial.println(uid, HEX);
     cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
+    msg->dst_uid = roberts->downstream_uid;
     msg->message_name = msg_names.send_id;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
@@ -169,6 +171,7 @@ void send_leader(roberts_t *roberts, byte uid) {
     Serial.println(uid, HEX);
     cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
+    msg->dst_uid = roberts->downstream_uid;
     msg->message_name = msg_names.send_leader;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
@@ -179,6 +182,7 @@ void send_leader(roberts_t *roberts, byte uid) {
 void send_primes(roberts_t *roberts, unsigned int lower_bound,  unsigned int count) {
     wk_message_t *msg = (wk_message_t*) calloc(1, sizeof(wk_message_t));
     msg->src_uid = roberts->uid;
+    msg->dst_uid = IR_BROADCAST;
     msg->command = msg_commands.count_primes;
     // encode lower_bound and count into payload
 
@@ -258,9 +262,9 @@ void loop() {
     if (sender != 0) {
         Serial.print(roberts->uid, HEX);
         Serial.print(" received IR message from "); Serial.println(sender, HEX);
-        OnEyes(0,200,0);
-        PlayChirp(NOTE_FS3,40); delay(200); PlayChirp(NOTE_D4, 40); delay(200);
-        OffEyes();
+        //OnEyes(0,200,0);
+        PlayChirp(NOTE_FS3,20); delay(100); PlayChirp(NOTE_D4, 20); delay(100);
+        //OffEyes();
     }
 }
 
@@ -280,8 +284,8 @@ void setup() {
   // Initialize global data structures
   buf = (byte*) calloc(MSG_SIZE, sizeof(byte));
   roberts = (roberts_t*) calloc(1,sizeof(roberts_t));
-  roberts->uid = 0x05;
-  roberts->downstream_uid = 0x06;
+  roberts->uid = 0x06;
+  roberts->downstream_uid = 0x05;
   roberts->state = s_active;
   roberts->is_active = false;
 }
