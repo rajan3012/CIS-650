@@ -195,11 +195,7 @@ void count_primes(unsigned int lower_bound, unsigned int upper_bound) {
 //#############################################
 //## global variables
 //#############################################
-roberts_t *roberts = (roberts_t*) calloc(1,sizeof(roberts_t));
-
-// guess have to hard code uid's
-//roberts.uid = 0x00;
-//roberts.downstream_uid = 0x00;
+roberts_t *roberts = NULL;
 
 
 // Main loop, ringo_receive will call handlers which handles state changes
@@ -247,6 +243,11 @@ void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(0));
   RestartTimer();
+
+  // Initialize roberts struct
+  roberts = (roberts_t*) calloc(1,sizeof(roberts_t));
+  roberts->uid = 0x05;
+  roberts->downstream_uid = 0x06;
 }
 
 void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {
