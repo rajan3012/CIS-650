@@ -18,9 +18,25 @@
 
 
 //# Use a single callback select by state, basically replace former call backs with elif blocks
-void on_topic(roberts_t *roberts, byte *buf) {
+void on_topic(void *userdata, byte *buf) {
 
-message_t *msg = (message_t*) buf;
+    roberts_t *roberts = (roberts_t*) userdata;
+    message_t *msg = (message_t*) buf;
+
+    // check whether this message is for me
+    if (msg->dst_uid != roberts->uid) {
+      return;
+    }
+
+    Serial.print("Message = ");
+    Serial.print(" src_uid: ");
+    Serial.print(msg->src_uid,HEX);
+    Serial.print(", dst_uid: ");
+    Serial.print(msg->dst_uid,HEX);
+    Serial.print(", message_name: ");
+    Serial.print(msg->message_name,HEX);
+    Serial.print(", payload[0]: ");
+    Serial.println(msg->payload[0],HEX);
 
     if (roberts->state == s_active) {
         //print "in active -- msg received: {}".format(msg.payload)
@@ -215,7 +231,7 @@ void loop() {
     else {
     }
       
-    ringo_receive(roberts, &on_topic);
+    ringo_receive(roberts->uid, roberts, &on_topic);
     
 }
 
@@ -248,36 +264,25 @@ void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {
     delay(random(100,150));          // delay 1 second (1000 milliseconds = 1 second)
 }
 
-void ringo_receive(roberts_t *roberts, void (*handler) (roberts_t *roberts, byte *buf)) {
+void ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf)) {
     byte *buf = (byte*) calloc(MSG_SIZE, sizeof(byte));
     byte sender;
     bool done = 0;
-    message_t *msg = (message_t*) buf;
     
     // put your code here inside the loop() function.  Here's a quick example that makes the eyes alternate colors....
     //if (!done) OnEyes(50,0,0);      // you can remove this stuff and put your own code here
-    if (ReceiveIRMsg(sender, roberts->uid, buf, MSG_SIZE)) {
-        Serial.print(roberts->uid, HEX);
+    if (ReceiveIRMsg(sender, my_uid, buf, MSG_SIZE)) {
+        Serial.print(my_uid, HEX);
         Serial.print(" received IR message from "); Serial.println(sender, HEX);
         // Print just the payload
-        Serial.print("src_uid: ");
-        Serial.print(msg->src_uid,HEX);
-        Serial.print(", dst_uid: ");
-        Serial.print(msg->dst_uid,HEX);
-        Serial.print(", message_name: ");
-        Serial.print(msg->message_name,HEX);
-        Serial.print(", payload[0]: ");
-        Serial.println(msg->payload[0],HEX);
         
         ResetIR(MSG_SIZE);
      
-        if (msg->dst_uid == roberts->uid) {
-          OnEyes(0,200,0);
-          PlayChirp(NOTE_FS3,40); delay(200); PlayChirp(NOTE_D4, 40); delay(200);
-          OffEyes();
-          handler(roberts, buf);
-          done = 1;
-        }
+        OnEyes(0,200,0);
+        PlayChirp(NOTE_FS3,40); delay(200); PlayChirp(NOTE_D4, 40); delay(200);
+        OffEyes();
+        handler(userdata, buf);
+        done = 1;
     }
     free(buf);
 }
