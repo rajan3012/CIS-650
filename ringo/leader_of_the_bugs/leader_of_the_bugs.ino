@@ -21,57 +21,63 @@
 void on_topic(void *userdata, byte *buf) {
 
     roberts_t *roberts = (roberts_t*) userdata;
-    message_t *msg = (message_t*) buf;
+    gn_message_t *gmsg = (gn_message_t*) buf;
 
     // check whether this message is for me
-    if ((msg->dst_uid != roberts->uid) && (msg->dst_uid != IR_BROADCAST)) {
+    if ((gmsg->dst_uid != roberts->uid) && (gmsg->dst_uid != IR_BROADCAST)) {
       return;
     }
 
     Serial.print("Message = ");
     Serial.print(" src_uid: ");
-    Serial.print(msg->src_uid,HEX);
+    Serial.print(gmsg->src_uid,HEX);
     Serial.print(", dst_uid: ");
-    Serial.print(msg->dst_uid,HEX);
-    Serial.print(", message_name: ");
-    Serial.print(msg->message_name,HEX);
+    Serial.print(gmsg->dst_uid,HEX);
+    Serial.print(", message_type: ");
+    Serial.print(gmsg->message_type,HEX);
     Serial.print(", payload[0]: ");
-    Serial.println(msg->payload[0],HEX);
+    Serial.println(gmsg->payload[0],HEX);
 
-    if (roberts->state == s_active) {
-        //print "in active -- msg received: {}".format(msg.payload)
-        byte uid = msg->payload[0];
-        if (msg->message_name == msg_names.send_id) {
-            decide(roberts, uid);
+    if ((roberts->state != s_working) && (gmsg->message_type != msg_types.working)) {
+      cr_message_t *msg = (cr_message_t*) buf;
+      
+        if (roberts->state == s_active) {
+            //print "in active -- msg received: {}".format(msg.payload)
+            byte uid = msg->payload[0];
+            if (msg->message_name == msg_names.send_id) {
+                decide(roberts, uid);
+            }
+            else if (msg->message_name == msg_names.send_leader) {
+                send_leader(roberts, uid);
+                working(roberts);
+            }
         }
-        else if (msg->message_name == msg_names.send_leader) {
-            send_leader(roberts, uid);
-            working(roberts);
+        else if (roberts->state == s_passive) {
+            byte uid = msg->payload[0];
+            if (msg->message_name == msg_names.send_leader) {
+                roberts->leader = msg->payload[0];
+                //print "Accepted {} as my leader".format(roberts.leader)
+                send_leader(roberts, uid);
+                working(roberts);
+            }
+            else if (msg->message_name == msg_names.send_id) {
+                send_uid(roberts, uid);
+            }
+        }
+        else if (roberts->state == s_waiting) {
+            //print "in wait--- msg received: {}".format(msg.payload)
+            if (msg->message_name == msg_names.send_leader) {
+                //print "Leader announce has gone full circle"
+                working(roberts);
+            }
         }
     }
-    else if (roberts->state == s_passive) {
-        byte uid = msg->payload[0];
-        if (msg->message_name == msg_names.send_leader) {
-            roberts->leader = msg->payload[0];
-            //print "Accepted {} as my leader".format(roberts.leader)
-            send_leader(roberts, uid);
-            working(roberts);
-        }
-        else if (msg->message_name == msg_names.send_id) {
-            send_uid(roberts, uid);
-        }
-    }
-    else if (roberts->state == s_waiting) {
-        //print "in wait--- msg received: {}".format(msg.payload)
-        if (msg->message_name == msg_names.send_leader) {
-            //print "Leader announce has gone full circle"
-            working(roberts);
-        }
-    }
-    else if (roberts->state == s_working) {
+    else if ((roberts->state == s_working) && (gmsg->message_type == msg_types.working)) {
+      wk_message_t *msg = (wk_message_t*) buf;
+      // TODO: add movement
     }
     else {
-        //print "ERROR: in an undefined state!"
+        // probably an error in targeted address from all the noise so just ignore
     }
 }
 
@@ -142,7 +148,7 @@ void wait(roberts_t *roberts) {
 ///################################################
 
 void send_uid(roberts_t *roberts, byte uid) {
-    message_t *msg = (message_t*) calloc(1, sizeof(message_t));
+    cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
     msg->message_name = msg_names.send_id;
     msg->payload[0] = uid;
@@ -152,7 +158,7 @@ void send_uid(roberts_t *roberts, byte uid) {
 }
 
 void send_leader(roberts_t *roberts, byte uid) {
-    message_t *msg = (message_t*) calloc(1, sizeof(message_t));
+    cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
     msg->message_name = msg_names.send_leader;
     msg->payload[0] = uid;
@@ -162,9 +168,9 @@ void send_leader(roberts_t *roberts, byte uid) {
 }
 
 void send_primes(roberts_t *roberts, unsigned int lower_bound,  unsigned int count) {
-    message_t *msg = (message_t*) calloc(1, sizeof(message_t));
+    wk_message_t *msg = (wk_message_t*) calloc(1, sizeof(wk_message_t));
     msg->src_uid = roberts->uid;
-    msg->message_name = msg_names.count_primes;
+    msg->command = msg_commands.count_primes;
     // encode lower_bound and count into payload
 
     ringo_transmit( roberts->uid, roberts->downstream_uid, (byte*) msg);

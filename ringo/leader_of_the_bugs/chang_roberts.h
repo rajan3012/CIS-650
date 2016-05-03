@@ -2,7 +2,7 @@
 #ifndef __CHANG_ROBERTS_H__
 #define __CHANG_ROBERTS_H__
 
-#define MSG_SIZE 20
+#define MSG_SIZE 10
 typedef unsigned char state_t;
 
 
@@ -16,24 +16,43 @@ typedef struct Chang_Roberts {
     byte leader = 0x00;
  } roberts_t;
 
-typedef struct Message {
-  byte src_uid;
-  byte dst_uid;
-  byte message_name;
-  byte payload[MSG_SIZE - 3];
-} __attribute__((pack)) message_t;
-
-typedef struct Generic_Message {
-  byte src_uid;
-  byte dst_uid;
-  byte message_name;
-} generic_message_t;
+struct Message_Types {
+  byte chang_roberts = 0x00;
+  byte working = 0x01;
+} msg_types;
 
 struct Messasge_Names {
   byte send_id = 0x00;
   byte send_leader = 0x02;
-  byte count_primes = 0x03;
 } msg_names;
+
+struct Message_Commands {
+  byte count_primes = 0x00;
+  byte move_forward = 0x0;
+} msg_commands;
+
+typedef struct Generic_Message {
+  byte src_uid;
+  byte dst_uid;
+  byte message_type;
+  byte payload[MSG_SIZE-3];
+} __attribute__((pack)) gn_message_t;
+
+typedef struct Chang_Roberts_Message {
+  byte src_uid;
+  byte dst_uid;
+  byte message_type;
+  byte message_name;
+  byte payload[MSG_SIZE-4];
+} __attribute__((pack)) cr_message_t;
+
+typedef struct Working_Message {
+  byte src_uid;
+  byte dst_uid;
+  byte message_type;
+  byte command;
+  byte payload[MSG_SIZE-4];
+} __attribute__((pack)) wk_message_t;
 
 
 
