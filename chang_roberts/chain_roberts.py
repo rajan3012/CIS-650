@@ -110,17 +110,19 @@ def on_topic(client, userdata, msg):
             working(client, userdata)
 
     elif userdata.state == States.working:
-        if msg.payload.startswith('count_primes'):
-            msg_list = msg.payload.split(':')
-            lower_bound = int(msg_list[1])
-            count = int(msg_list[2])
+        #if msg.payload.startswith('count_primes'):
+        if msg.payload.startswith('blink_LED'):
+            #msg_list = msg.payload.split(':')
+            #lower_bound = int(msg_list[1])
+            #count = int(msg_list[2])
 
             # send message to get others started
-            send_primes(client, userdata, lower_bound + 100001, count + 1)
-
+            #send_primes(client, userdata, lower_bound + 100001, count + 1)
+            send_token(client, userdata)
             # start our count
-            print "counting primes {}:{}".format(lower_bound, lower_bound+100000)
-            count_primes(lower_bound, lower_bound + 100000)
+            #print "counting primes {}:{}".format(lower_bound, lower_bound+100000)
+            print "blinking LED"
+            #count_primes(lower_bound, lower_bound + 100000)
 
     else:
         print "ERROR: in an undefined state!"
@@ -158,7 +160,8 @@ def working(client, userdata):
     userdata.state = States.working
     if userdata.leader == userdata.UID:
         print "I'm the leader so let's get busy"
-        send_primes(client, userdata, 3, 1)
+        #send_primes(client, userdata, 3, 1)
+        send_token(client,userdata)
 
 def active(client, userdata):
     print "State changed to active:{}".format(userdata.active)
@@ -197,6 +200,12 @@ def send_leader(client,userdata, uid):
 def send_primes(client, userdata, lower_bound, count):
     payload = 'count_primes:' + str(lower_bound) + ':' + str(count)
     print "Publishing msg {} to {}".format(payload,userdata.publish_topic)
+    client.publish(userdata.publish_topic, payload, userdata.qos, True)
+    userdata.wait_on_publish = True
+
+def send_token(client,userdata):
+    payload = 'blink_LED:'
+    print "Publishing msg {} to {}".format(payload, userdata.publish_topic)
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
     userdata.wait_on_publish = True
 
