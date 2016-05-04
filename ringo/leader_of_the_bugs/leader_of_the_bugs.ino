@@ -264,9 +264,11 @@ void loop() {
         OnEyes(255,255,0); // yellow
     }
     else if (roberts->state == s_waiting) {
+        wait(roberts);
         OnEyes(0,255,255); // cyan
     }
     else if (roberts->state == s_working) {
+        working(roberts);
         OnEyes(0,255,0); // green
     }
     else {
@@ -302,8 +304,8 @@ void setup() {
   // Initialize global data structures
   buf = (byte*) calloc(MSG_SIZE, sizeof(byte));
   roberts = (roberts_t*) calloc(1,sizeof(roberts_t));
-  roberts->uid = 0x06;
-  roberts->downstream_uid = 0x05;
+  roberts->uid = 0x05;
+  roberts->downstream_uid = 0x04;
   roberts->state = s_active;
   roberts->is_active = false;
   roberts->tenative_leader = roberts->uid;
