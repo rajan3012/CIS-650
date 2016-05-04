@@ -321,8 +321,6 @@ def main():
         # main loop
         while(True):
 
-            blink_led()
-
             # if elif blocks for each state
             if myMQTT.state == States.active:
                 pass
