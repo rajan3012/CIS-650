@@ -125,7 +125,7 @@ void announce(roberts_t *roberts) {
 void working(roberts_t *roberts) {
     roberts->state = s_working;
     if (roberts->leader == roberts->uid) {
-        //print "I'm the leader so let's get busy"
+        Serial.println("I'm the leader so let's get busy");
         //send_primes(roberts, 3, 1)
     }
     else {
