@@ -9,6 +9,7 @@ usage: pass_token_mqtt.py <UID> <upstream UID>
 import sys
 import time
 import paho.mqtt.client as mqtt
+from grovepi import *
 from time import sleep
 #from enum import Enum
 
@@ -227,6 +228,13 @@ def count_primes(lower_bound, upper_bound):
     end = timer()
 
     print "Found {} primes between {} and {} in {}".format(count, lower_bound, upper_bound, end-start)
+
+def blink_led():
+    led = 4
+    pinMode(led, "output")
+    digitalWrite(led,1)
+    time.sleep(1)
+    digitalWrite(led,0)
 
 def main():
     #############################################
