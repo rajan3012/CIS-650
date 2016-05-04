@@ -37,7 +37,7 @@ void on_topic(void *userdata, byte *buf) {
     Serial.print(", message_type: ");
     Serial.println(gmsg->message_type,HEX);
 
-    if ((roberts->state != s_working) && (gmsg->message_type != msg_types.working)) {
+    if ((roberts->state != s_working) && (gmsg->message_type == msg_types.chang_roberts)) {
       cr_message_t *msg = (cr_message_t*) buf;
       
         if (roberts->state == s_active) {
@@ -77,14 +77,32 @@ void on_topic(void *userdata, byte *buf) {
         else if (roberts->state == s_waiting) {
             Serial.println("in waiting, I am the Leader");
             if (msg->message_name == msg_names.send_leader) {
+                roberts->resend_count = 0; //reset count when changing states
+                roberts->election_complete = true;
+                send_quite(roberts);
                 working(roberts);
             }
         }
     }
     else if ((roberts->state == s_working) && (gmsg->message_type == msg_types.working)) {
         Serial.println("in working");
-        wk_message_t *msg = (wk_message_t*) buf;
-      // TODO: add movement
+
+        // first check message type since may be still receiving chang_roberts resends.
+        if ((gmsg->message_type == msg_types.chang_roberts) && (roberts->uid == roberts->leader)) {
+            send_quite(roberts);
+        }
+        else if ((gmsg->message_type == msg_types.working) && (roberts->uid != roberts->leader)) {
+          wk_message_t *msg = (wk_message_t*) buf;
+
+          if (msg->command == msg_commands.quite) {
+            roberts->election_complete = true;
+          }
+          else if (msg->command == msg_commands.move) {
+            motors(50,50);
+            delay(1000);
+            motors(0,0);
+          }
+        }
     }
     else {
         // probably an error in targeted address from all the noise so just ignore
@@ -125,13 +143,15 @@ void announce(roberts_t *roberts) {
 void working(roberts_t *roberts) {
     roberts->state = s_working;
     if (roberts->leader == roberts->uid) {
-        Serial.println("I'm the leader so let's get busy");
-        //send_primes(roberts, 3, 1)
+        Serial.println("I'm the leader so let's get movin");
+        motors(50,50);
+        send_move(roberts);
+        delay(1000);
+        motors(0,0);
     }
     else {
       if (!roberts->election_complete) {
-        roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
-        delay(100 * roberts->resend_count);      
+        resend_delay(roberts);      
         send_leader(roberts, roberts->leader);
       }
     }
@@ -139,8 +159,7 @@ void working(roberts_t *roberts) {
 
 void active(roberts_t *roberts) {
     roberts->state = s_active;
-    roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
-    delay(100 * roberts->resend_count);
+    resend_delay(roberts);
     send_uid(roberts, roberts->uid);
     if (roberts->is_active == false) {
          roberts->is_active = true;
@@ -151,8 +170,7 @@ void passive(roberts_t *roberts) {
     roberts->state = s_passive;
 
     // resend tenative leader
-    roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
-    delay(100 * roberts->resend_count);   
+    resend_delay(roberts);   
     send_uid(roberts, roberts->tenative_leader);
 }
 
@@ -163,8 +181,7 @@ void wait(roberts_t *roberts) {
       roberts ->resend_count = 1;
     }
     else {
-    delay(100 * roberts->resend_count);         
-    roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
+    resend_delay(roberts);
     send_leader(roberts, roberts->uid);
     }
 }
@@ -199,6 +216,24 @@ void send_leader(roberts_t *roberts, byte uid) {
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
     IR_transmit(roberts->uid, roberts->downstream_uid, (byte*) msg, MSG_SIZE);
+    free(msg);
+}
+
+void send_quite(roberts_t *roberts) {
+    wk_message_t *msg = (wk_message_t*) calloc(1, sizeof(wk_message_t));
+    msg->src_uid = roberts->uid;
+    msg->dst_uid = IR_BROADCAST;
+    msg->command = msg_commands.quite;
+    IR_transmit( roberts->uid, IR_BROADCAST, (byte*)msg, MSG_SIZE);
+    free(msg);
+}
+
+void send_move(roberts_t *roberts) {
+    wk_message_t *msg = (wk_message_t*) calloc(1, sizeof(wk_message_t));
+    msg->src_uid = roberts->uid;
+    msg->dst_uid = IR_BROADCAST;
+    msg->command = msg_commands.move;
+    IR_transmit( roberts->uid, IR_BROADCAST, (byte*)msg, MSG_SIZE);
     free(msg);
 }
 
@@ -274,7 +309,7 @@ void loop() {
     else {
     }
 
-    delay(1000);
+    delay(100);
     
     byte sender = IR_receive(roberts->uid, roberts, &on_topic, buf, MSG_SIZE);
 
@@ -288,6 +323,16 @@ void loop() {
     }
 }
 
+void resend_delay(roberts_t* roberts) {
+    roberts->resend_count += 1;
+    Serial.print("resend count=");
+    Serial.println(roberts->resend_count, DEC);
+    unsigned int factor = roberts->resend_count;
+    if (factor > MAX_RESEND_COUNT) {
+      factor = MAX_RESEND_COUNT;
+    }
+    delay(100 * factor);
+}
 
 void setup() {
   HardwareBegin();        //initialize Ringo's brain to work with his circuitry

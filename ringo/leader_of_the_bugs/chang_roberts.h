@@ -33,6 +33,8 @@ struct Messasge_Names {
 struct Message_Commands {
   byte count_primes = 0x00;
   byte move_forward = 0x01;
+  byte quite = 0x02;
+  byte move = 0x03;
 } msg_commands;
 
 typedef struct Generic_Message {
@@ -74,6 +76,6 @@ extern void count_primes(unsigned int lower_bound, unsigned int upper_bound);
 extern void ringo_transmit(byte src_uid, byte dst_uid, byte *buf);
 extern byte ringo_receive(byte my_uid, void *userdata, void (*handler) (void *userdata, byte *buf));
 extern void on_topic(void *userdata, byte *buf);
-
+extern void resend_delay(roberts_t *roberts);
 
 #endif

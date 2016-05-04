@@ -49,7 +49,7 @@ int IR_transmit(byte src_uid, byte dst_uid, byte *msg, unsigned int size) {
 
     // turn off lights for transmitting
     OnEyes(0,0,0);
-    delay(random(100,150));
+    delay(random(100,200));
    
     ResetIR(size);
       
