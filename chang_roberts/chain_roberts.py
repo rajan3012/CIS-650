@@ -28,7 +28,7 @@ class MQTT_data:
         #self.States = Enum('active', 'decide', 'passive', 'announce', 'wait', 'working')
         self.UID = UID
         self.upstream_UID = upstream_UID
-        self.broker = "white0"
+        self.broker = "192.168.1.101"
         self.port = 1883
         self.send_token_topic = 'token/' + str(upstream_UID)
         self.will_topic = 'will/'
