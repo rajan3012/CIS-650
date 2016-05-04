@@ -10,6 +10,8 @@ import sys
 import time
 import paho.mqtt.client as mqtt
 from grovepi import *
+import subprocess
+
 from time import sleep
 #from enum import Enum
 
@@ -235,6 +237,10 @@ def blink_led():
     digitalWrite(led,1)
     time.sleep(1)
     digitalWrite(led,0)
+
+def signal_ringo():
+    # SEND_START, SEND_STOP, SEND_ONCE)
+    subprocess.popen(("irsend", "SEND_START", "Ringo", "Key-3"))
 
 def main():
     #############################################
