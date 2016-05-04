@@ -46,12 +46,15 @@ void on_topic(void *userdata, byte *buf) {
             if (msg->message_name == msg_names.send_id) {
                 Serial.print(" rcvd uid=");
                 Serial.println(uid,HEX);
+                roberts->resend_count = 0; //reset count when changing states
                 decide(roberts, uid);
             }
             else if (msg->message_name == msg_names.send_leader) {
                 Serial.print(" rcvd leader uid=");
                 Serial.println(uid,HEX);
+                roberts->leader = uid;
                 send_leader(roberts, uid);
+                roberts->resend_count = 0; //reset count when changing states
                 working(roberts);
             }
         }
@@ -63,12 +66,12 @@ void on_topic(void *userdata, byte *buf) {
                 Serial.println(uid,HEX);
                 roberts->leader = uid;
                 send_leader(roberts, uid);
+                roberts->resend_count = 0; //reset count when changing states
                 working(roberts);
             }
             else if (msg->message_name == msg_names.send_id) {
                 Serial.print(" rcvd uid=");
                 Serial.println(uid,HEX);
-                send_uid(roberts, uid);
             }
         }
         else if (roberts->state == s_waiting) {
@@ -92,12 +95,11 @@ void on_topic(void *userdata, byte *buf) {
 //## State Functions
 //################################################
 void decide(roberts_t *roberts, byte uid) {
-    //print "State changed to decide"
     roberts->state = s_deciding;
-    //print "uid={} roberts.UID={}".format(uid, roberts.UID)
 
     if (uid > roberts->uid) {
-        send_uid(roberts, uid);
+        roberts->tenative_leader = uid;
+        send_uid(roberts, roberts->tenative_leader);
         passive(roberts);
         return;
     }
@@ -113,25 +115,32 @@ void decide(roberts_t *roberts, byte uid) {
 }
 
 void announce(roberts_t *roberts) {
-    //print "State changed to announce"
     roberts->state = s_announce;
     roberts->leader = roberts->uid;
     send_leader(roberts, roberts->uid);
+    roberts->resend_count = 0;
     wait(roberts);
 }
 
 void working(roberts_t *roberts) {
-    //print "State changed to working"
     roberts->state = s_working;
     if (roberts->leader == roberts->uid) {
         //print "I'm the leader so let's get busy"
         //send_primes(roberts, 3, 1)
     }
+    else {
+      if (!roberts->election_complete) {
+        roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
+        delay(100 * roberts->resend_count);      
+        send_leader(roberts, roberts->leader);
+      }
+    }
 }
 
 void active(roberts_t *roberts) {
-    //print "State changed to active:{}".format(roberts.active)
     roberts->state = s_active;
+    roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
+    delay(100 * roberts->resend_count);
     send_uid(roberts, roberts->uid);
     if (roberts->is_active == false) {
          roberts->is_active = true;
@@ -139,13 +148,25 @@ void active(roberts_t *roberts) {
 }
 
 void passive(roberts_t *roberts) {
-    //print("State changed to passive")
     roberts->state = s_passive;
+
+    // resend tenative leader
+    roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
+    delay(100 * roberts->resend_count);   
+    send_uid(roberts, roberts->tenative_leader);
 }
 
 void wait(roberts_t *roberts) {
     //print("State changed to wait for round trip")
     roberts->state = s_waiting;
+    if (roberts->resend_count == 0) {
+      roberts ->resend_count = 1;
+    }
+    else {
+    delay(100 * roberts->resend_count);         
+    roberts->resend_count = (roberts->resend_count == MAX_RESEND_COUNT) ? MAX_RESEND_COUNT : roberts->resend_count + 1;
+    send_leader(roberts, roberts->uid);
+    }
 }
 
 
@@ -159,6 +180,7 @@ void send_uid(roberts_t *roberts, byte uid) {
     cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
     msg->dst_uid = roberts->downstream_uid;
+    msg->message_type = msg_types.chang_roberts;
     msg->message_name = msg_names.send_id;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
@@ -172,6 +194,7 @@ void send_leader(roberts_t *roberts, byte uid) {
     cr_message_t *msg = (cr_message_t*) calloc(1, sizeof(cr_message_t));
     msg->src_uid = roberts->uid;
     msg->dst_uid = roberts->downstream_uid;
+    msg->message_type = msg_types.chang_roberts;
     msg->message_name = msg_names.send_leader;
     msg->payload[0] = uid;
     //print "Publishing msg {} to {}".format(payload,roberts.publish_topic)
@@ -226,13 +249,10 @@ void loop() {
 
     // else-if blocks for each state
     if (roberts->state == s_active) {
-        // keep calling active() to continuously send uid
-        // until we hear from someone and change state
         active(roberts);
         OnEyes(255,0,0); // red
     }
     else if (roberts->state == s_announce) {
-        // announce state main loop code goes here
         OnEyes(255,128,0); // orange
     }
     else if (roberts->state == s_deciding) {
@@ -240,15 +260,13 @@ void loop() {
         OnEyes(127,0,255); // purple
     }
     else if (roberts->state == s_passive) {
-        // passive state main loop code goes here
+        passive(roberts);
         OnEyes(255,255,0); // yellow
     }
     else if (roberts->state == s_waiting) {
-        // waiting state main loop code goes here
         OnEyes(0,255,255); // cyan
     }
     else if (roberts->state == s_working) {
-        // working state main loop code goes here
         OnEyes(0,255,0); // green
     }
     else {
@@ -288,6 +306,9 @@ void setup() {
   roberts->downstream_uid = 0x05;
   roberts->state = s_active;
   roberts->is_active = false;
+  roberts->tenative_leader = roberts->uid;
+  roberts->election_complete = false;
+  roberts->resend_count = 0;
 }
 
 void ringo_transmit(byte src_uid, byte dst_uid, byte *buf) {

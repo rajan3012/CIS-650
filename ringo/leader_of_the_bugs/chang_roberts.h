@@ -3,6 +3,7 @@
 #define __CHANG_ROBERTS_H__
 
 #define MSG_SIZE 10  // can not exceed IR_MAX_MSG_SIZE - HEADER_SIZE
+#define MAX_RESEND_COUNT 10
 typedef unsigned char state_t;
 
 
@@ -13,7 +14,10 @@ typedef struct Chang_Roberts {
     byte downstream_uid = 0x00;
     states_t state = s_active;
     bool is_active = false;
+    byte tenative_leader = 0x00;
     byte leader = 0x00;
+    bool election_complete = false;
+    unsigned int resend_count = 0;
  } roberts_t;
 
 struct Message_Types {
