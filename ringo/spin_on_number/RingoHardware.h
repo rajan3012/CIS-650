@@ -217,6 +217,7 @@ extern char CheckMenuButton(void);
 //
 extern byte GetIRButton(void);
 extern const uint8_t IRRemoteButtons[][2];
+#define PRE_DATA 0xFF
 #define IR_1 1
 #define IR_2 2
 #define IR_3 3
@@ -244,7 +245,7 @@ extern const uint8_t IRRemoteButtons[][2];
 //Low level functions:
 extern int IRTransitionCount;
 extern unsigned char IRBytes[20];
-extern byte irData[]={0x00,0xFF,0x00,0x00};
+extern byte irData[]={0x00,PRE_DATA,0x00,0x00};
 extern char IRActive;
 extern volatile char IRReceiving;//note: IRReceiving turned off if IsIRDone() in regular or auto NavigationHandler() and causes ReadSideSensors() to repeat
 //
