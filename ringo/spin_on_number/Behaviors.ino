@@ -345,8 +345,8 @@ void Behavior_TheRingoDance(void){ //Ver. 1.0, Kevin King
                                     // https://www.arduino.cc/en/Reference/Random
                                     
   int r,g,b,freq,right,left;        // initialize variables used by this function
-
-  while(1){
+  bool run = true;
+  while(run){
     r = random(120);                      // random pick Red eye component
     g = random(120);                      // random pick Green eye component
     b = random(120);                      // random pick Blue eye component
@@ -364,6 +364,7 @@ void Behavior_TheRingoDance(void){ //Ver. 1.0, Kevin King
     PlayChirp(random(2000,8000),100);     // set another note
     delay(300);                           // play for 300 ms
     PlayChirp(random(2000,8000),100);     // play another note, but this note plays very briefly before looping (almost can't hear it)
+    run = false;
   } // end of while(1);
 
 } // end of Behavior_TheRingoDance();
