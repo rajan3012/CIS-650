@@ -255,7 +255,7 @@ def blink_led():
 def signal_ringo():
     # SEND_START, SEND_STOP, SEND_ONCE)
     print("Signaling ringo")
-    subprocess.popen(("irsend", "SEND_START", "Ringo", MY_KEY))
+    subprocess.Popen(("irsend", "SEND_START", "Ringo", MY_KEY))
 
 def main():
     #############################################

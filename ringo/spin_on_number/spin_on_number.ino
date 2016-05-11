@@ -18,7 +18,6 @@ been started.
 
 Significant portions of this code written by
 Dustin Soodak for Plum Geek LLC. Some portions
-contributed by Kevin King.
 Portions from other open source projects where noted.
 This code is licensed under:
 Creative Commons Attribution-ShareAlike 2.0 Generic (CC BY-SA 2.0)
@@ -77,16 +76,17 @@ void loop(){
         switch (button){            // activate a behavior based on which button was pressed
 
          case REMOTE_NUM:           // Button 3, "The Ringo Dance" behavior
-         RxIRRestart(4);            // restart wait for 4 byte IR remote command
+         
          Behavior_TheRingoDance();  // what it says NO EDGE DETECTION - DON'T LET RINGO JUMP OFF YOUR TABLE!
+         RxIRRestart(4);            // restart wait for 4 byte IR remote command
          break;
          
          default:                   // if no match, break out and wait for a new code
          PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command
-         RxIRRestart(4);            //wait for 4 byte IR remote command
+         
          SwitchMotorsToSerial();
          Serial.print("button: ");Serial.println(button);  // send button number pressed to serial window
-      
+         RxIRRestart(4);            //wait for 4 byte IR remote command
          break;
         }
         
