@@ -83,6 +83,8 @@ def on_message(client, userdata, msg):
 # Use a single callback select by state, basically replace former call backs with elif blocks
 def on_topic(client, userdata, msg):
 
+    print("received msg={}".format(msg))
+
     if userdata.state == States.active:
         print "in active--- msg received: {}".format(msg.payload)
         message_name, uid = parse_msg(msg.payload)
