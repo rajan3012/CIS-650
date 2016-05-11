@@ -59,7 +59,7 @@ void loop(){
 
   restart:              //label to cause program to come back to here if "MENU" on remote is pressed in any example
   
-   byte button;
+   byte button = 0;
 
   if(GetTime()>1000){   //blink rear pixel once a second to indicate Ringo is in "Menu" mode
       SetPixelRGB(0,0,0,100);   // turn on rear tail light to BLUE
@@ -72,11 +72,9 @@ void loop(){
   
   if(IsIRDone()){                   //wait for an IR remote control command to be received
       button = GetIRButton();       // read which button was pressed, store in "button" variable
-
-     
+      RxIRRestart(4);     
       if(button){                   // if "button" is not zero...
         switch (button){            // activate a behavior based on which button was pressed
-
 
          case REMOTE_NUM:           // Button 3, "The Ringo Dance" behavior
          RxIRRestart(4);            // restart wait for 4 byte IR remote command
@@ -91,7 +89,10 @@ void loop(){
       
          break;
         }
+        
       }
+      button = 0;
+      
     }//end if(IsIRDone())
 }
 
