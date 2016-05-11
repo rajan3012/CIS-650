@@ -215,6 +215,7 @@ def send_token(client,userdata):
     print "Publishing msg {} to {}".format(payload, userdata.publish_topic)
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
     userdata.wait_on_publish = True
+    sleep(1)
 
 ##################################################
 ## Utility functions
