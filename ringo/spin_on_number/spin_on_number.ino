@@ -31,7 +31,7 @@ Visit http://www.arduino.cc to learn about the Arduino.
 #include "RingoHardware.h"
 #include "Behaviors.h"
 
-#define REMOTE_NUM 1
+#define REMOTE_NUM 2
 
 void setup(){
   HardwareBegin();        //initialize Ringo's brain to work with his circuitry

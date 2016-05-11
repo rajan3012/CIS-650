@@ -15,6 +15,7 @@ import subprocess
 from time import sleep
 #from enum import Enum
 
+MY_KEY = "key-2"
 
 class States:
     active = 0
@@ -127,6 +128,10 @@ def on_topic(client, userdata, msg):
             send_token(client, userdata)
             blink_led()
 
+        elif msg.payload.startswith('signal_ringo'):
+            send_token(client, userdata)
+            signal_ringo()
+
     else:
         print "ERROR: in an undefined state!"
 
@@ -206,7 +211,7 @@ def send_primes(client, userdata, lower_bound, count):
     userdata.wait_on_publish = True
 
 def send_token(client,userdata):
-    payload = 'blink_LED:'
+    payload = 'signal_ringo:'
     print "Publishing msg {} to {}".format(payload, userdata.publish_topic)
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
     userdata.wait_on_publish = True
@@ -250,7 +255,7 @@ def blink_led():
 def signal_ringo():
     # SEND_START, SEND_STOP, SEND_ONCE)
     print("Signaling ringo")
-    subprocess.popen(("irsend", "SEND_START", "Ringo", "Key-3"))
+    subprocess.popen(("irsend", "SEND_START", "Ringo", MY_KEY))
 
 def main():
     #############################################
