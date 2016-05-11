@@ -240,6 +240,7 @@ def count_primes(lower_bound, upper_bound):
     print "Found {} primes between {} and {} in {}".format(count, lower_bound, upper_bound, end-start)
 
 def blink_led():
+    print("blinking my LED")
     led = 4
     pinMode(led, "output")
     digitalWrite(led,1)
@@ -248,6 +249,7 @@ def blink_led():
 
 def signal_ringo():
     # SEND_START, SEND_STOP, SEND_ONCE)
+    print("Signaling ringo")
     subprocess.popen(("irsend", "SEND_START", "Ringo", "Key-3"))
 
 def main():
