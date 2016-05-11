@@ -346,7 +346,7 @@ void Behavior_TheRingoDance(void){ //Ver. 1.0, Kevin King
                                     
   int r,g,b,freq,right,left;        // initialize variables used by this function
   bool run = true;
-  while(run){
+  {
     r = random(120);                      // random pick Red eye component
     g = random(120);                      // random pick Green eye component
     b = random(120);                      // random pick Blue eye component
@@ -365,6 +365,8 @@ void Behavior_TheRingoDance(void){ //Ver. 1.0, Kevin King
     delay(300);                           // play for 300 ms
     PlayChirp(random(2000,8000),100);     // play another note, but this note plays very briefly before looping (almost can't hear it)
     run = false;
+    Motors(0,0);
+    OffChirp();
   } // end of while(1);
 
 } // end of Behavior_TheRingoDance();
