@@ -15,7 +15,7 @@ import subprocess
 from time import sleep
 #from enum import Enum
 
-MY_KEY = "key-2"
+MY_KEY = "KEY_2"
 
 class States:
     active = 0
@@ -131,6 +131,7 @@ def on_topic(client, userdata, msg):
             blink_led()
 
         elif msg.payload.startswith('signal_ringo'):
+            blink_led()
             signal_ringo()
             send_token(client, userdata)
 
