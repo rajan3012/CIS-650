@@ -155,20 +155,24 @@ def check_publish_queue(client, userdata):
 def main():
 
 
-    if len(sys.argv) != 3:
-        print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: field UID> <int: gate UID>'
+    if len(sys.argv) < 2:
+        print 'ERROR\nusage: squeeze.py <int: UID> <int: ROLE>'
         sys.exit()
 
     try:
         my_uid = int(sys.argv[1])
         my_role = int(sys.argv[2])
     except ValueError:
-        print 'ERROR\nusage: greedy_neighbor.py <int: UID> <int: roleD>'
+        print 'ERROR\nusage: squeeze.py <int: UID> <int: roleD>'
         sys.exit()
-
     print("myUID={}, myRole={}".format(my_uid, my_role))
     me = MQTT(my_uid, my_role)
 
+    if my_role == Role.Supervisor:
+        upper_bound = int(sys.argv[3])
+        p_range = int(sys.argv[4])
+        #me.upper = upperValue
+        #me.range = lowerValue
     try:
         # create a client instance
         client = mqtt.Client(str(me.uid))

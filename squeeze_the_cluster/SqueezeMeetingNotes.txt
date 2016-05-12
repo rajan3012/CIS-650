@@ -1,0 +1,36 @@
+TASK Queue <task objects>
+PENDING dicionary <task uid , task object >
+RSLT dictionayry <task uid, (true/false)> >> process sum of the recieved result 
+
+
+
+
+task attributes: 
+uid = task uid 
+lo = lower bound of this task range
+up = uppter bound of this task range
+rslt = num of primes = None if result was not recieved 
+worker uid = the uid of who was assigned 
+
+String class to format the task as a message to send to the workers using MQTT
+
+__str__():
+	uid:lo:up:rslt
+
+src uid : dst uid : task uid: lo : up : rslt
+ if recieved task uid = -1 FINISHED no more tasks
+
+If supervisor recieves A Will msg from a worker: =
+	>>pull the task that was assigned to the worker from the pending queue and put back to task queue
+
+
+If no more tasks and no more pending queue. Finished publish
+If no more tasks and there are pending tasks in pending queue reassign task to workers. 
+
+---- case: when a worker dies and NO will msg recieved 
+
+
+Msg types :
+request msg
+rslt msg
+will msg
