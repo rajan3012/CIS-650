@@ -80,7 +80,7 @@ class MQTT:
             print("Publishing {},{}".format(self.topic, msg))
             self.client.publish(self.topic, msg, self.qos)
 
-    def check_publish_queue(self, client):
+    def check_publish_queue(self):
         if not self.pub_pending and not self.outgoing.empty():
             try:
                 topic, payload = self.outgoing.get_nowait()
@@ -88,7 +88,7 @@ class MQTT:
                 return # nothing to do
             self.pub_pending = True
             print("Publishing {},{}".format(topic, payload))
-            client.publish(topic, payload, self.qos)
+            self.client.publish(topic, payload, self.qos)
 
 
 class Worker(MQTT):
@@ -96,6 +96,7 @@ class Worker(MQTT):
     def __init__(self, my_uid):
         super(MQTT, self).__init__(my_uid)
         self.role = Role.worker
+        self.request_sent = False
 
     def duties(self):
         # main loop for a worker
@@ -111,6 +112,7 @@ class Worker(MQTT):
             if msg is not None:
                 src_uid, dst_uid, msg_type, payload = parse_msg(msg)
                 if msg_type is Msg.task:
+                    self.request_sent = False
                     my_task = Task(payload)
                     my_task.result = self.mp_count_primes(my_task.lo, my_task.up)
                     payload = str(my_task)
@@ -119,7 +121,9 @@ class Worker(MQTT):
 
             self.check_publish_queue()
 
-            sleep(1)
+            if self.request_sent == False:
+                msg = ':'.join(self.uid, '0', Msg.request)
+                self.publish(msg)
 
 
     def chunks(self, lo, up, sub_range):
@@ -223,7 +227,7 @@ def parse_msg(msg):
 def main():
 
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 3:
         print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
         sys.exit()
 
@@ -233,7 +237,18 @@ def main():
     except ValueError:
         print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
         sys.exit()
+
     print("myUID={}, myRole={}".format(my_uid, my_role))
+
+    if my_role == Role.supervisor:
+        if  len(sys.argv) == 5:
+            upper_bound = int(sys.argv[3])
+            p_range = int(sys.argv[4])
+        else:
+            print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
+            sys.exit()
+
+    print("lower bound={}, upper bound ={}")
 
     # create instance of supervisor or worker
     me = None
@@ -245,9 +260,6 @@ def main():
         print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
         sys.exit()
 
-    if my_role == Role.Supervisor:
-        upper_bound = int(sys.argv[3])
-        p_range = int(sys.argv[4])
     try:
         # create a client instance
         client = mqtt.Client(str(me.uid))
