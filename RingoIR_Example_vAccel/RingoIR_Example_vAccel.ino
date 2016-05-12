@@ -1,6 +1,7 @@
 #include "RingoHardware.h"
 #include "FunStuff.h"
 #include "IRCommunication.h"
+#include "Navigation.h"
 
 #define MSG_SIZE 3
 byte msg[MSG_SIZE];
@@ -13,6 +14,8 @@ byte maxAccely = -1;
 
 int i,n,bumpdir,heading,currentheading,degr;
 int32_t largenum;
+
+
 void setup() {
   HardwareBegin();        //initialize Ringo's brain to work with his circuitry
   PlayStartChirp();       //Play startup chirp and blink eyes
@@ -22,12 +25,16 @@ void setup() {
   ResetIR(MSG_SIZE);
 
   Serial.begin(9600);
+  Serial.print("Accel Zeros[0]"); Serial.println(AccelZeroes[0]);
+  Serial.print("Accel Zeros[1]"); Serial.println(AccelZeroes[1]);  
   randomSeed(analogRead(0));
   RestartTimer();
 }
 
 void sendAccel() {
-  n=AccelBufferSize();    
+  n=AccelBufferSize();
+  memset(AccelAcceleration, '\0', n);
+     
   if(n){
     AccelGetAxes(AccelAcceleration);
     AccelAcceleration[0]=AccelAcceleration[0]-AccelZeroes[0];//x-axis raw
@@ -41,21 +48,12 @@ void sendAccel() {
   //  RestartTimer(); 
   //}
   
-  if(abs(accelx)>4000 || abs(accely)>4000){                 //This is how sensitve the "poke" trigger is. 4000 is default.
-    bumpdir=180+(90-atan2(accely,accelx)*180/3.14159);
-    heading=GetDegrees()+bumpdir;
-    RestartTimer();
-    OnEyes(50,0,0);                                         //make eyes red when poked. You can change this color if you like.
-
-    while(GetTime()<100){//wait till is is most likely skidding
-      SimpleGyroNavigation();//look at gyroscope as it turns
-    }
-    AccelGetAxes(AccelAcceleration);
-    AccelAcceleration[0]=AccelAcceleration[0]-AccelZeroes[0];//x-axis raw
-    AccelAcceleration[1]=AccelAcceleration[1]-AccelZeroes[1];//y-axis raw
+  AccelGetAxes(AccelAcceleration);
+  AccelAcceleration[0]=AccelAcceleration[0]-AccelZeroes[0];//x-axis raw
+  AccelAcceleration[1]=AccelAcceleration[1]-AccelZeroes[1];//y-axis raw
     
-      SimpleGyroNavigation();//look at gyroscope as it turns
-    }
+  SimpleGyroNavigation();//look at gyroscope as it turns
+  
   Serial.print("SENSOR:    " );Serial.print(accelx,DEC);Serial.print(" ");Serial.println(accely,DEC);
   
   if (abs(accelx) > maxAccelx) {
@@ -82,7 +80,7 @@ void sendAccel() {
 void loop(){ 
   OnEyes(0,0,200);
   sendAccel(); 
-  delay(5000);
+  delay(500);
   OffEyes();
 }
 

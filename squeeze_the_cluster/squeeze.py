@@ -19,12 +19,14 @@ class Msg:
     request = '0'
     task    = '1'
     result  = '2'
-    stop    = '3'
 
 
 class Supervisor:
 
     def __init__(self):
+        self.bag = Queue()
+        self.pending = {}
+        self.results = {}
         pass
 
     def duties(self):
@@ -70,6 +72,9 @@ class MQTT:
         # queue of outgoing messages
         self.queue = Queue()
         self.pending = False # waiting for a publish confirmation
+
+        # queue of incoming messages
+        self.incoming = Queue()
 
 ##############################################
 ## MQTT callbacks
