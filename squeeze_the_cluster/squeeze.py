@@ -23,13 +23,16 @@ class Msg:
 
 class Supervisor:
 
-    def __init__(self):
+    def __init__(self, upper, range):
+        self.upper = upper
+        self.range = range
         self.bag = Queue()
         self.pending = {}
         self.results = {}
-        pass
+
 
     def duties(self):
+        # main loop for a supervisor
         pass
 
 class Worker:
@@ -37,7 +40,10 @@ class Worker:
         pass
 
     def duties(self):
+        # main loop for a worker
         pass
+
+    # import multi-process primes here
 
 #############################################
 ## MQTT settings
@@ -117,9 +123,11 @@ def on_linda(client, userdata, msg):
 
 def parse_msg(msg):
     msg_list = msg.payload.split(':')
-    message_name = msg_list[0]
-    payload = msg_list[1:]
-    return message_name, payload
+    src_uid = msg_list[0]
+    dst_uid = msg_list[1]
+    msg_type = msg_list[2]
+    payload = msg_list[3:]
+    return src_uid, dst_uid, msg_type, payload
 
 def publish(client, userdata, topic, payload):
     if userdata.pending or not userdata.queue.empty():
@@ -181,7 +189,7 @@ def main():
             client.loop()
 
         if me.role.id == Role.supervisor:
-            me.role = Supervisor()
+            me.role = Supervisor(upper_bound, p_range)
             me.role.duties()
         elif me.role.id == Role.worker:
             me.role = Supervisor()
