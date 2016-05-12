@@ -233,7 +233,6 @@ def main():
     except ValueError:
         print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
         sys.exit()
-
     print("myUID={}, myRole={}".format(my_uid, my_role))
 
     # create instance of supervisor or worker
@@ -246,6 +245,9 @@ def main():
         print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
         sys.exit()
 
+    if my_role == Role.Supervisor:
+        upper_bound = int(sys.argv[3])
+        p_range = int(sys.argv[4])
     try:
         # create a client instance
         client = mqtt.Client(str(me.uid))
