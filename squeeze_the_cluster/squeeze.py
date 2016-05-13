@@ -113,46 +113,19 @@ class Worker(MQTT):
                 src_uid, dst_uid, msg_type, payload = parse_msg(msg)
                 if msg_type is Msg.task:
                     self.request_sent = False
-                    my_task = Task(payload)
-                    my_task.result = self.mp_count_primes(my_task.lo, my_task.up)
+                    my_task = Task.from_payload(payload)
+                    my_task.result = mp_count_primes(my_task.lo, my_task.up)
                     payload = str(my_task)
-                    msg = ':'.join('0',self.uid, payload)
+                    msg = ':'.join(['0',self.uid, payload])
                     self.publish(msg)
 
             self.check_publish_queue()
 
             if self.request_sent == False:
-                msg = ':'.join(self.uid, '0', Msg.request)
+                msg = ':'.join([self.uid, '0', Msg.request])
                 self.publish(msg)
 
 
-    def chunks(self, lo, up, sub_range):
-        for lo_sub in range(lo, up, sub_range):
-            up_sub = lo_sub + sub_range
-            if up_sub > up:
-                up_sub = up
-            yield lo_sub, up_sub
-
-    def count_primes(bounds):
-
-        lower_bound, upper_bound = bounds
-        count = 0
-
-        for n in range(lower_bound, upper_bound):
-            upper = int(ceil(sqrt(n)))
-            for i in range(2, upper):
-                if n % i != 0:
-                    break
-                count += 1
-
-        return count
-
-    def mp_count_primes(self, lower_bound, upper_bound):
-        pool = Pool()
-        range = (upper_bound - lower_bound) // cpu_count()
-        counts = pool.map(self.count_primes, self.chunks(lower_bound, upper_bound, range))
-        count = reduce(lambda a, b: a+b, counts)
-        return count
 
 class Supervisor:
 
@@ -217,6 +190,33 @@ def parse_msg(msg):
     payload = msg_list[3:]
     return src_uid, dst_uid, msg_type, payload
 
+def chunks(lo, up, sub_range):
+    for lo_sub in range(lo, up, sub_range):
+        up_sub = lo_sub + sub_range
+        if up_sub > up:
+            up_sub = up
+        yield lo_sub, up_sub
+
+def count_primes(bounds):
+
+    lower_bound, upper_bound = bounds
+    count = 0
+
+    for n in range(lower_bound, upper_bound):
+        upper = int(ceil(sqrt(n)))
+        for i in range(2, upper):
+            if n % i != 0:
+                break
+            count += 1
+
+    return count
+
+def mp_count_primes(lower_bound, upper_bound):
+    pool = Pool()
+    range = (upper_bound - lower_bound) // cpu_count()
+    counts = pool.map(count_primes, chunks(lower_bound, upper_bound, range))
+    count = reduce(lambda a, b: a+b, counts)
+    return count
 
 
 
