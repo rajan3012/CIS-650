@@ -172,6 +172,8 @@ def on_publish(client, userdata, mid):
 def on_will(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
     userdata.abort = True
+    #TODO when a supervisor receives a will move any pending tasks assign
+    # to that worker back into the bag
 
 #Called when a message has been received on a subscribed topic (unfiltered)
 def on_message(client, userdata, msg):
