@@ -6,5 +6,5 @@ from squeeze import *
 
 my_worker = Worker(101)
 
-count1 = my_worker.mp_count_primes(0, 100000)
+count1 = mp_count_primes(0, 100000)
 print count1

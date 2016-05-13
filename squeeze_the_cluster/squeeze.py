@@ -125,8 +125,6 @@ class Worker(MQTT):
                 msg = ':'.join([self.uid, '0', Msg.request])
                 self.publish(msg)
 
-
-
 class Supervisor:
 
     def __init__(self, uid, upper, range):
