@@ -33,7 +33,7 @@ class Task:
     @classmethod
     def from_payload(cls, payload):
         uid, lo, up, worker_uid = payload.split(':')
-        return cls(uid, lo, up, worker_uid)
+        return cls(int(uid), int(lo), int(up), int(worker_uid))
 
     def __str__(self):
         s = Msg.task
