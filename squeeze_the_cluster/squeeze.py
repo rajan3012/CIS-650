@@ -140,7 +140,14 @@ class Supervisor:
 
     def duties(self):
         # main loop for a supervisor
-        pass
+
+        while not self.abort:
+
+            #TODO check incoming queue and process request and result messages
+
+            self.check_publish_queue()
+
+            self.client.loop()
 
 
 ##############################################
