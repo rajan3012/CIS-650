@@ -198,12 +198,25 @@ def chunks(lo, up, sub_range):
 def count_primes(bounds):
 
     lower_bound, upper_bound = bounds
-    count = 0
+    count = 2
 
-    for n in range(lower_bound, upper_bound):
+    # handle some edge conditions
+    if lower_bound > upper_bound:
+        return 0
+    if upper_bound <= 0:
+        return 0
+    if upper_bound == 1:
+        return 1
+    if upper_bound == 2:
+        return 2
+
+    if lower_bound < 3:
+        lower_bound = 3
+
+    for n in range(lower_bound, upper_bound + 1):
         upper = int(ceil(sqrt(n)))
         is_prime = True
-        for i in range(2, upper):
+        for i in range(2, upper + 1):
             if n % i == 0:
                 is_prime = False
                 break
