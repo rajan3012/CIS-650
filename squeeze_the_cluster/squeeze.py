@@ -138,6 +138,10 @@ class Supervisor:
         self.pending = {}
         self.results = {}
 
+    def reap_uid(self, uid):
+        # put any pending tasks assigned to dead uid back in the bag
+        pass
+
     def duties(self):
         # main loop for a supervisor
 
@@ -171,9 +175,13 @@ def on_publish(client, userdata, mid):
 #Called when message received on will_topic
 def on_will(client, userdata, msg):
     print("Received message: "+str(msg.payload)+"on topic: "+msg.topic)
-    userdata.abort = True
-    #TODO when a supervisor receives a will move any pending tasks assign
-    # to that worker back into the bag
+    # abort where the supervisor dies
+    if "role: " + str(Role.supervisor) in msg.payload:
+        userdata.abort = True
+    elif userdata.role == Role.supervisor:
+        fields = msg.payload.split(' ')
+        dead_uid = fields[1]
+        userdata.reap_uid(dead_uid)
 
 #Called when a message has been received on a subscribed topic (unfiltered)
 def on_message(client, userdata, msg):
@@ -201,11 +209,13 @@ def parse_msg(msg):
 
 def chunks(lo, up, sub_range):
     lo_sub = lo
-    up_sub = lo + sub_range
-    while up_sub <= up:
+    up_sub = lo
+    while up_sub < up:
+        up_sub = up_sub + sub_range
+        if up_sub > up:
+            up_sub = up
         yield lo_sub, up_sub
         lo_sub = up_sub + 1
-        up_sub = up_sub + sub_range
 
 def count_primes(bounds):
 
