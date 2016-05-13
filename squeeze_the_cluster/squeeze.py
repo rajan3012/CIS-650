@@ -273,11 +273,16 @@ def main():
         client.on_connect = on_connect
         client.on_publish = on_publish
         client.on_message = on_message
+        client.message_callback_add(me.will_topic, on_will)
+        client.message_callback_add(me.topic, on_linda)
 
         # connect to broker
         client.connect(me.broker, me.port, keepalive=me.keepalive)
         while not me.connected:
             client.loop()
+
+        # subscribe to topics
+        client.subscribe([(me.topic, me.qos), (me.will_topic, on_will)])
 
         me.client = client
         me.duties()
