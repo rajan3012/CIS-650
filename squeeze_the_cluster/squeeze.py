@@ -204,7 +204,7 @@ def count_primes(bounds):
         upper = int(ceil(sqrt(n)))
         is_prime = True
         for i in range(2, upper):
-            if n % i != 0:
+            if n % i == 0:
                 is_prime = False
                 break
         if is_prime:
