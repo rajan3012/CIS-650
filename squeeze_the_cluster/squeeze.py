@@ -211,9 +211,9 @@ def count_primes(bounds):
     if upper_bound == 2:
         return 2
 
-    if lower_bound < 2:
-        count = 1
-        lower_bound = 2
+    if lower_bound < 3:
+        count = 2
+        lower_bound = 3
 
     for n in range(lower_bound, upper_bound + 1):
         upper = int(ceil(sqrt(n)))
