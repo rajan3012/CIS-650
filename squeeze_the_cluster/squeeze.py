@@ -129,11 +129,11 @@ class Worker(MQTT):
 
 class Supervisor:
 
-    def __init__(self, uid, upper, range):
+    def __init__(self, uid, upper, sub_range):
         MQTT.__init__(self, uid)
         self.role = Role.supervisor
         self.upper = upper
-        self.range = range
+        self.range = sub_range
         self.bag = Queue()
         self.pending = {}
         self.results = {}
@@ -270,17 +270,17 @@ def main():
     if my_role == Role.supervisor:
         if  len(sys.argv) == 5:
             upper_bound = int(sys.argv[3])
-            p_range = int(sys.argv[4])
+            sub_range = int(sys.argv[4])
         else:
             print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
             sys.exit()
 
-    print("lower bound={}, upper bound ={}")
+    print("upper bound={}, sub range ={}".format(upper_bound, sub_range))
 
     # create instance of supervisor or worker
     me = None
     if my_role == Role.supervisor:
-        me = Supervisor(my_uid)
+        me = Supervisor(my_uid, upper_bound, sub_range)
     elif my_role == Role.worker:
         me = Worker(my_uid)
     else:
