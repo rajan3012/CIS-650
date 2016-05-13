@@ -94,7 +94,7 @@ class MQTT:
 class Worker(MQTT):
 
     def __init__(self, my_uid):
-        super(Worker, self).__init__(my_uid)
+        MQTT.__init__(self, my_uid)
         self.role = Role.worker
         self.request_sent = False
 
@@ -157,7 +157,7 @@ class Worker(MQTT):
 class Supervisor:
 
     def __init__(self, uid, upper, range):
-        super(Supervisor, self).__init__(uid)
+        MQTT.__init__(self, uid)
         self.role = Role.supervisor
         self.upper = upper
         self.range = range
