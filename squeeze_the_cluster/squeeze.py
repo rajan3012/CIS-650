@@ -189,16 +189,17 @@ def parse_msg(msg):
     return src_uid, dst_uid, msg_type, payload
 
 def chunks(lo, up, sub_range):
-    for lo_sub in range(lo, up, sub_range):
-        up_sub = lo_sub + sub_range
-        if up_sub > up:
-            up_sub = up
+    lo_sub = lo
+    up_sub = lo + sub_range
+    while up_sub <= up:
         yield lo_sub, up_sub
+        lo_sub = up_sub + 1
+        up_sub = up_sub + sub_range
 
 def count_primes(bounds):
 
     lower_bound, upper_bound = bounds
-    count = 2
+    count = 0
 
     # handle some edge conditions
     if lower_bound > upper_bound:
@@ -210,8 +211,9 @@ def count_primes(bounds):
     if upper_bound == 2:
         return 2
 
-    if lower_bound < 3:
-        lower_bound = 3
+    if lower_bound < 2:
+        count = 1
+        lower_bound = 2
 
     for n in range(lower_bound, upper_bound + 1):
         upper = int(ceil(sqrt(n)))
