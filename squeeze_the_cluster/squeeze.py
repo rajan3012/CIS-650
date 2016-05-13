@@ -149,8 +149,8 @@ class Worker(MQTT):
 
     def mp_count_primes(self, lower_bound, upper_bound):
         pool = Pool()
-        num_chunks = cpu_count
-        counts = pool.map(self.count_primes, p_range // num_chunks)
+        range = (upper_bound - lower_bound) // cpu_count()
+        counts = pool.map(self.count_primes, self.chunks(lower_bound, upper_bound, range))
         count = reduce(lambda a, b: a+b, counts)
         return count
 
@@ -221,7 +221,7 @@ def parse_msg(msg):
 
 
 #############################################
-## Main method takes command line arguments initialize and call role
+## Main method takes command line arguments initialize and call duties
 #############################################
 
 def main():
