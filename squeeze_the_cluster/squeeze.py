@@ -127,7 +127,7 @@ class Worker(MQTT):
 
             self.client.loop()
 
-class Supervisor:
+class Supervisor(MQTT):
 
     def __init__(self, uid, upper, sub_range):
         MQTT.__init__(self, uid)
