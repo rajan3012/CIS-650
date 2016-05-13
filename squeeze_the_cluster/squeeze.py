@@ -121,9 +121,11 @@ class Worker(MQTT):
 
             self.check_publish_queue()
 
-            if self.request_sent == False:
+            if not self.request_sent:
                 msg = ':'.join([self.uid, '0', Msg.request])
                 self.publish(msg)
+
+            self.client.loop()
 
 class Supervisor:
 
