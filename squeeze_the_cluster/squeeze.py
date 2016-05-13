@@ -202,9 +202,12 @@ def count_primes(bounds):
 
     for n in range(lower_bound, upper_bound):
         upper = int(ceil(sqrt(n)))
+        is_prime = True
         for i in range(2, upper):
             if n % i != 0:
+                is_prime = False
                 break
+        if is_prime:
             count += 1
 
     return count
