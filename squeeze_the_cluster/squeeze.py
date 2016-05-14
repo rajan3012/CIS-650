@@ -21,6 +21,7 @@ class Msg:
     request = '0'
     task    = '1'
     result  = '2'
+    stop    = '3'
 
 class Task:
     def __init__(self, uid, lo, up, worker_uid = None):
@@ -102,7 +103,7 @@ class Worker(MQTT):
         # main loop for a worker
         while not self.abort:
 
-            # check to see if any tasks have been sent
+            # check to see if any tasks have been received
             msg = None
             try:
                 msg = self.incoming.get_nowait()
@@ -111,13 +112,15 @@ class Worker(MQTT):
                 pass
             if msg is not None:
                 src_uid, dst_uid, msg_type, payload = parse_msg(msg)
-                if msg_type is Msg.task:
+                if msg_type == Msg.task:
                     self.request_sent = False
                     my_task = Task.from_payload(payload)
                     my_task.result = mp_count_primes(my_task.lo, my_task.up)
                     payload = str(my_task)
                     msg = ':'.join(['0',self.uid, payload])
                     self.publish(msg)
+                elif msg_type == Msg.stop:
+                    self.abort = True
 
             self.check_publish_queue()
 
