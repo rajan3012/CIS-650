@@ -301,8 +301,8 @@ def on_linda(client, userdata, msg):
 #############################################
 def parse_msg(msg):
     msg_list = msg.payload.split(':')
-    src_uid = msg_list[0]
-    dst_uid = msg_list[1]
+    src_uid = int(msg_list[0])
+    dst_uid = int(msg_list[1])
     msg_type = msg_list[2]
     payload = None
     if len(msg_list) > 3:
