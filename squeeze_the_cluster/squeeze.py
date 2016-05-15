@@ -213,7 +213,7 @@ class Supervisor(MQTT):
             self.results[result.uid] = result
         if result.uid in self.pending:
             del(self.pending[result.uid])
-            if len(self.pending) == 0:
+            if (self.bag.qsize() == 0) and (len(self.pending) == 0):
                 self.done = True
 
     def duties(self):
@@ -243,7 +243,7 @@ class Supervisor(MQTT):
             if self.done and not self.output_done:
                 # output the final tally
                 total_primes = 0
-                for result in self.results:
+                for result in self.results.values():
                     total_primes += result.result
                 print()
                 print("The final tally for primes between {} and {} is {}".format(0, self.upper, total_primes))
