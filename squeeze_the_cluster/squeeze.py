@@ -134,7 +134,7 @@ class Worker(MQTT):
                     my_task = Task.from_payload(payload)
                     my_task.result = mp_count_primes(my_task.lo, my_task.up)
                     payload = str(my_task)
-                    msg = ':'.join(['0',self.uid, payload])
+                    msg = ':'.join(['0',str(self.uid), payload])
                     self.publish(msg)
                 elif msg_type == Msg.stop:
                     self.abort = True
@@ -142,7 +142,7 @@ class Worker(MQTT):
             self.check_publish_queue()
 
             if not self.request_sent:
-                msg = ':'.join([self.uid, '0', Msg.request])
+                msg = ':'.join([str(self.uid), '0', Msg.request])
                 self.publish(msg)
 
             self.client.loop()
@@ -198,7 +198,7 @@ class Supervisor(MQTT):
             new_msg = ':'.join(['0',str(self.uid),str(send_task)])
         else:
             # send out a stop message
-            new_msg = ':'.join(['0',uid,Msg.stop])
+            new_msg = ':'.join(['0',str(uid),Msg.stop])
         self.publish(new_msg)
 
     def process_result(self, result, uid):
@@ -274,10 +274,9 @@ def on_will(client, userdata, msg):
         userdata.abort = True
     elif userdata.role == Role.supervisor:
         # construct a 'dead' message and place into incoming queue
-        dead_msg = ':'.join()
         fields = msg.payload.split(' ')
         dead_uid = fields[1]
-        dead_msg = ':'.join(dead_uid, '0', Msg.dead)
+        dead_msg = ':'.join(str(dead_uid), '0', Msg.dead)
         userdata.incoming.put(dead_msg)
 
 #Called when a message has been received on a subscribed topic (unfiltered)
