@@ -57,7 +57,7 @@ class Task:
         s = Msg.task
         if self.result is not None:
             s = Msg.result
-        return ':'.join(s, str(self.uid), str(self.lo), str(self.up), str(self.worker_uid, str(self.result)))
+        return ':'.join(s, str(self.uid), str(self.lo), str(self.up), str(self.worker_uid), str(self.result))
 
 
 #############################################
