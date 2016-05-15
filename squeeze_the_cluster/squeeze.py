@@ -160,6 +160,15 @@ class Supervisor(MQTT):
         self.done = False
         self.output_done = False
 
+        # fill the bag
+        self.make_work(0, upper, sub_range)
+
+    def make_work(self, lower, upper, sub_range):
+        for uid, bounds in enumerate(chunks(lower, upper, sub_range)):
+            sub_lower, sub_upper = bounds
+            more_work = Task(uid, sub_lower, sub_upper)
+            self.bag.put(more_work)
+
     def reap_uid(self, uid):
         # put any pending tasks assigned only to the dead uid back in the bag
         for task in self.pending.values():
