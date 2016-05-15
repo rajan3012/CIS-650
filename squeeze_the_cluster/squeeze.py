@@ -35,10 +35,10 @@ class Task:
         self.result = result
 
     @classmethod
-    def from_payload(cls, payload):
-        fields = payload.split(':')
+    def from_payload(cls, fields):
+        # fields is a list of arguments
 
-        # first three should always be there
+        # three should always be there
         uid = int(fields[0])
         lo = int(fields[1])
         up = int(fields[2])
