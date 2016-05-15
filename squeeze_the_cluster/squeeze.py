@@ -144,6 +144,7 @@ class Worker(MQTT):
             if not self.request_sent:
                 msg = ':'.join([str(self.uid), '0', Msg.request])
                 self.publish(msg)
+                self.request_sent = True
 
             self.client.loop()
 
@@ -179,6 +180,7 @@ class Supervisor(MQTT):
                 self.bag.put(task)
 
     def process_request(self, uid):
+        print("Processing request from {}".format(uid))
         new_msg = None
         # send task from bag until it is empty
         send_task = None
@@ -300,7 +302,9 @@ def parse_msg(msg):
     src_uid = msg_list[0]
     dst_uid = msg_list[1]
     msg_type = msg_list[2]
-    payload = msg_list[3:]
+    payload = None
+    if len(msg_list) > 3:
+        payload = msg_list[3:]
     return src_uid, dst_uid, msg_type, payload
 
 def chunks(lo, up, sub_range):
