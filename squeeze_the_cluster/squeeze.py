@@ -282,7 +282,7 @@ def on_will(client, userdata, msg):
     elif userdata.role == Role.supervisor:
         # construct a 'dead' message and place into incoming queue
         fields = msg.payload.split(' ')
-        dead_uid = fields[1]
+        dead_uid = fields[2]
         dead_msg = ':'.join([str(dead_uid), '0', Msg.dead])
         userdata.incoming.put(Fake_Message(dead_msg))
 
@@ -359,6 +359,7 @@ def mp_count_primes(lower_bound, upper_bound):
     range = (upper_bound - lower_bound) // cpu_count()
     counts = pool.map(count_primes, chunks(lower_bound, upper_bound, range))
     count = reduce(lambda a, b: a+b, counts)
+    pool.terminate()
     return count
 
 
