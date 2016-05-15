@@ -226,6 +226,7 @@ class Supervisor(MQTT):
                 pass
             if msg is not None:
                 src_uid, dst_uid, msg_type, payload = parse_msg(msg)
+                print("Retrieved msg_type={} from queue with payload: {}".format(msg_type, payload))
                 if msg_type == Msg.request:
                     self.process_request(src_uid)
                 elif msg_type == Msg.result:
@@ -292,6 +293,7 @@ def on_linda(client, userdata, msg):
     #print("Received msg id={}, type={}, src={}, dst={}, payload={}".format(msg.id, msg_type, src_uid, dst_uid, payload))
     print("Received type={}, src={}, dst={}, payload={}".format(msg_type, src_uid, dst_uid, payload))
     if dst_uid == userdata.uid:
+        print("Placing message into incoming queue")
         userdata.incoming.put(msg)
 
 #############################################
