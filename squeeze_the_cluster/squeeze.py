@@ -416,7 +416,7 @@ def main():
             client.loop()
 
         # subscribe to topics
-        client.subscribe([(me.topic, me.qos), (me.will_topic, on_will)])
+        client.subscribe([(me.topic, me.qos), (me.will_topic, me.qos)])
 
         me.client = client
         me.duties()
