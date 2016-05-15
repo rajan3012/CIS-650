@@ -36,7 +36,7 @@ class Task:
 
     @classmethod
     def from_payload(cls, payload):
-        uid, lo, up, worker_uid = payload.split(':')
+        uid, lo, up, worker_uid, result = payload.split(':')
         return cls(int(uid), int(lo), int(up), int(worker_uid))
 
     def __str__(self):
