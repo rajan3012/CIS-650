@@ -192,12 +192,12 @@ class Supervisor(MQTT):
         if send_task is not None:
             send_task.worker_uid.append(uid)
             self.pending[send_task.uid] = send_task
-            new_msg = ':'.join(['0',str(self.uid),str(send_task)])
+            new_msg = ':'.join(['0',str(uid),str(send_task)])
         elif len(self.pending) > 0:
             # send out a pending task assigned to fewest workers
             send_task = min(self.pending.values, key=lambda v: len(v.worker_uid))
             send_task.worker_uid.append(uid)
-            new_msg = ':'.join(['0',str(self.uid),str(send_task)])
+            new_msg = ':'.join(['0',str(uid),str(send_task)])
         else:
             # send out a stop message
             new_msg = ':'.join(['0',str(uid),Msg.stop])
@@ -279,7 +279,7 @@ def on_will(client, userdata, msg):
         # construct a 'dead' message and place into incoming queue
         fields = msg.payload.split(' ')
         dead_uid = fields[1]
-        dead_msg = ':'.join(str(dead_uid), '0', Msg.dead)
+        dead_msg = ':'.join([str(dead_uid), '0', Msg.dead])
         userdata.incoming.put(dead_msg)
 
 #Called when a message has been received on a subscribed topic (unfiltered)
