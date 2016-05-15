@@ -22,13 +22,16 @@ class Msg:
     task    = '1'
     result  = '2'
     stop    = '3'
+    dead    = '4'
 
 class Task:
     def __init__(self, uid, lo, up, worker_uid = None):
         self.uid = uid
         self.lo = lo
         self.up = up
-        self.worker_uid = worker_uid
+        self.work_uid = []
+        if worker_uid is not None
+            self.worker_uid.append(worker_uid)
         self.result = None
 
     @classmethod
@@ -140,17 +143,82 @@ class Supervisor(MQTT):
         self.bag = Queue()
         self.pending = {}
         self.results = {}
+        self.done = False
+        self.output_done = False
 
     def reap_uid(self, uid):
-        # put any pending tasks assigned to dead uid back in the bag
-        pass
+        # put any pending tasks assigned only to the dead uid back in the bag
+        for task in self.pending.values():
+            if uid in task.worker_uid:
+                task.worker_uid.remove(uid)
+            if len(task.worker_uid) == 0:
+                del(self.pending[task.uid])
+                self.bag.put(task)
+
+    def process_request(self, uid):
+        new_msg = None
+        # send task from bag until it is empty
+        send_task = None
+        try:
+            send_task = self.bag.get_nowait()
+        except Empty:
+            # I would prefer that such an operation would return None rather than raise an exception
+            pass
+        if send_task is not None:
+            send_task.worker_uid.append(uid)
+            self.pending[send_task.uid] = send_task
+            new_msg = ':'.join(['0',str(self.uid),str(send_task)])
+        elif len(self.pending) > 0:
+            # send out a pending task assigned to fewest workers
+            send_task = min(self.pending.values, key=lambda v: len(v.worker_uid))
+            send_task.worker_uid.append(uid)
+            new_msg = ':'.join(['0',str(self.uid),str(send_task)])
+        else:
+            # send out a stop message
+            new_msg = ':'.join(['0',uid,Msg.stop])
+        self.publish(new_msg)
+
+    def process_result(self, result, uid):
+        if result.uid not in self.results:
+            print("Received results for task {} from {} with count={}".format(result.uid, uid, result.result))
+            self.results[result.uid] = result
+        if result.uid in self.pending:
+            del(self.pending[result.uid])
+            if len(self.pending) == 0:
+                self.done = True
 
     def duties(self):
         # main loop for a supervisor
 
         while not self.abort:
 
-            #TODO check incoming queue and process request and result messages
+            # check for and handle incoming request and result messages
+            msg = None
+            try:
+                msg = self.incoming.get_nowait()
+            except Empty:
+                # don't see this as a good use of exceptions
+                pass
+            if msg is not None:
+                src_uid, dst_uid, msg_type, payload = parse_msg(msg)
+                if msg_type == Msg.request:
+                    self.process_request(src_uid)
+                elif msg_type == Msg.result:
+                    self.process_result(Task.from_payload(payload), src_uid)
+                elif msg_type == Msg.dead:
+                    self.reap_uid(src_uid)
+                else:
+                    print("Received unexpected message type{}".format(msg_type))
+
+            if self.done and not self.output_done:
+                # output the final tally
+                total_primes = 0
+                for result in self.results:
+                    total_primes += result.result
+                print()
+                print("The final tally for primes between {} and {} is {}".format(0, self.upper, total_primes))
+                print()
+                self.output_done = True
 
             self.check_publish_queue()
 
@@ -182,9 +250,12 @@ def on_will(client, userdata, msg):
     if "role: " + str(Role.supervisor) in msg.payload:
         userdata.abort = True
     elif userdata.role == Role.supervisor:
+        # construct a 'dead' message and place into incoming queue
+        dead_msg = ':'.join()
         fields = msg.payload.split(' ')
         dead_uid = fields[1]
-        userdata.reap_uid(dead_uid)
+        dead_msg = ':'.join(dead_uid, '0', Msg.dead)
+        userdata.incoming.put(dead_msg)
 
 #Called when a message has been received on a subscribed topic (unfiltered)
 def on_message(client, userdata, msg):
