@@ -29,7 +29,7 @@ class Task:
         self.uid = uid
         self.lo = lo
         self.up = up
-        self.work_uid = []
+        self.worker_uid = []
         if worker_uid is not None:
             self.worker_uid.append(worker_uid)
         self.result = result
