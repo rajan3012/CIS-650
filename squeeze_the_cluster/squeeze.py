@@ -138,7 +138,7 @@ class Worker(MQTT):
                     my_task = Task.from_payload(payload)
                     my_task.result = mp_count_primes(my_task.lo, my_task.up)
                     payload = str(my_task)
-                    msg = ':'.join(['0',str(self.uid), payload])
+                    msg = ':'.join([str(self.uid), '0', payload])
                     self.publish(msg)
                 elif msg_type == Msg.stop:
                     self.abort = True
