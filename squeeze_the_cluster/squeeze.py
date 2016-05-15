@@ -287,8 +287,8 @@ def on_message(client, userdata, msg):
 #Callback method for LINDA topic
 def on_linda(client, userdata, msg):
     src_uid, dst_uid, msg_type, payload = parse_msg(msg)
-    print("Received msg id={}, type={}, src={}, dst={}, payload={}".format(msg.id, msg_type, src_uid, dst_uid, payload))
-
+    #print("Received msg id={}, type={}, src={}, dst={}, payload={}".format(msg.id, msg_type, src_uid, dst_uid, payload))
+    print("Received type={}, src={}, dst={}, payload={}".format(msg_type, src_uid, dst_uid, payload))
     if dst_uid == userdata.uid:
         userdata.incoming.put(msg)
 
