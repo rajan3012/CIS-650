@@ -12,6 +12,7 @@ import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 from math import sqrt, ceil
 from multiprocessing import Pool, cpu_count
+from ast import literal_eval
 
 class Role:
     supervisor  = 0
@@ -45,7 +46,7 @@ class Task:
 
         worker_uid = None
         if len(fields) >= 4:
-            worker_uid = int(fields[3])
+            worker_uid = literal_eval(fields[3])
 
         result = None
         if len(fields) == 5:
