@@ -53,8 +53,8 @@ while not my_sup.bag.empty():
 my_sup.make_work(0, 100000, 1000)
 
 # test reaping uid
-task1 = my_sup.bags.get()
-task2 = my_sup.bags.get()
+task1 = my_sup.bag.get()
+task2 = my_sup.bag.get()
 
 task1.worker_uid.append(1)
 task2.worker_uid.append(1)
