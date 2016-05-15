@@ -49,7 +49,7 @@ class Task:
             worker_uid = literal_eval(fields[3])
 
         result = None
-        if len(fields) == 5:
+        if (len(fields) == 5) and (fields[4] != "None"):
             result = int(fields[4])
 
         return cls(uid, lo, up, worker_uid, result)
@@ -60,6 +60,9 @@ class Task:
             s = Msg.result
         return ':'.join([s, str(self.uid), str(self.lo), str(self.up), str(self.worker_uid), str(self.result)])
 
+class Fake_Message:
+    def __init__(self,payload):
+        self.payload = payload
 
 #############################################
 ## MQTT settings
@@ -281,7 +284,7 @@ def on_will(client, userdata, msg):
         fields = msg.payload.split(' ')
         dead_uid = fields[1]
         dead_msg = ':'.join([str(dead_uid), '0', Msg.dead])
-        userdata.incoming.put(dead_msg)
+        userdata.incoming.put(Fake_Message(dead_msg))
 
 #Called when a message has been received on a subscribed topic (unfiltered)
 def on_message(client, userdata, msg):
