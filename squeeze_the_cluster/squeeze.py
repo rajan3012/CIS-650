@@ -76,7 +76,7 @@ class MQTT:
         self.will_topic = 'will/'
 
         # quality of service
-        self.qos = 1
+        self.qos = 2
         self.keepalive = 30
 
         # status attributes
@@ -382,7 +382,7 @@ def main():
             print 'ERROR\nusage: squeeze.py <int: UID> <int: role>'
             sys.exit()
 
-    print("upper bound={}, sub range ={}".format(upper_bound, sub_range))
+        print("upper bound={}, sub range ={}".format(upper_bound, sub_range))
 
     # create instance of supervisor or worker
     me = None
