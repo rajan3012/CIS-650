@@ -39,3 +39,11 @@ for test_payload in [my_request, my_task, my_assigned_task, my_result, my_stop]:
         test_task = Task.from_payload(payload)
         print("Created result: {}".format(test_task))
 
+
+# supervisor tests
+my_sup = Supervisor(0, 10000, 1000)
+my_worker = Worker(1)
+
+for task in my_sup.bag:
+    print(task)
+
