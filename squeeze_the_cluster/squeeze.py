@@ -199,7 +199,7 @@ class Supervisor(MQTT):
             new_msg = ':'.join(['0',str(uid),str(send_task)])
         elif len(self.pending) > 0:
             # send out a pending task assigned to fewest workers
-            send_task = min(self.pending.values, key=lambda v: len(v.worker_uid))
+            send_task = min(self.pending.values(), key=lambda v: len(v.worker_uid))
             send_task.worker_uid.append(uid)
             new_msg = ':'.join(['0',str(uid),str(send_task)])
         else:
