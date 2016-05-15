@@ -49,3 +49,23 @@ print("created {} tasks".format(my_sup.bag.qsize()))
 while not my_sup.bag.empty():
     task = my_sup.bag.get()
     print(task)
+
+my_sup.make_work(0, 100000, 1000)
+
+# test reaping uid
+task1 = my_sup.bags.get()
+task2 = my_sup.bags.get()
+
+task1.worker_uid.append(1)
+task2.worker_uid.append(1)
+task2.worker_uid.append(2)
+my_sup.pending[task1.uid] = task1
+my_sup.pending[task2.uid] = task2
+print("before reaping uid 1")
+for task in my_sup.pending.values():
+    print task
+my_sup.reap_uid(1)
+print("after reaping uid 1")
+for task in my_sup.pending.values():
+    print task
+
