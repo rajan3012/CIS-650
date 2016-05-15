@@ -25,19 +25,33 @@ class Msg:
     dead    = '4'
 
 class Task:
-    def __init__(self, uid, lo, up, worker_uid = None):
+    def __init__(self, uid, lo, up, worker_uid = None, result = None):
         self.uid = uid
         self.lo = lo
         self.up = up
         self.work_uid = []
         if worker_uid is not None:
             self.worker_uid.append(worker_uid)
-        self.result = None
+        self.result = result
 
     @classmethod
     def from_payload(cls, payload):
-        uid, lo, up, worker_uid, result = payload.split(':')
-        return cls(int(uid), int(lo), int(up), int(worker_uid))
+        fields = payload.split(':')
+
+        # first three should always be there
+        uid = int(fields[0])
+        lo = int(fields[1])
+        up = int(fields[2])
+
+        worker_uid = None
+        if len(fields) >= 4:
+            worker_uid = int(fields[3])
+
+        result = None
+        if len(fields) == 5:
+            result = int(fields[4])
+
+        return cls(uid, lo, up, worker_uid, result)
 
     def __str__(self):
         s = Msg.task
