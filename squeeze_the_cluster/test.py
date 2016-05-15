@@ -33,8 +33,8 @@ for test_payload in [my_request, my_task, my_result, my_stop]:
     print("src={}, dst={}, msg_type={}, payload={}".format(src_uid, dst_uid, msg_type, payload))
     if msg_type == Msg.task:
         test_task = Task.from_payload(payload)
-        print("Created task: {}".format(test_task))
+        print("Created task: {}".format(test_payload))
     elif msg_type == Msg.result:
         test_task = Task.from_payload(test_task)
-        print("Created result: {}".format(test_task))
+        print("Created result: {}".format(test_payload))
 
