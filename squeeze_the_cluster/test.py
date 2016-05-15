@@ -15,11 +15,19 @@ assert mp_count_primes(0,1000) == 169
 
 
 # message parsing
+class Test_Msg:
+
+    def __init__(self):
+        self.payload = None
+
 my_request = ':'.join(['0','1',Msg.request])
 my_task = ':'.join(['0','1',Msg.task,'0','1000'])
 my_result = ':'.join(['0','1',Msg.task,'0','1000','169'])
 my_stop = ':'.join(['0','1',Msg.stop])
 
-for msg in [my_request, my_task, my_result, my_stop]:
-    src_uid, dst_uid, msg_type, payload = parse_msg(msg)
+my_msg = Test_Msg
+
+for test_payload in [my_request, my_task, my_result, my_stop]:
+    my_msg.payload = test_payload
+    src_uid, dst_uid, msg_type, payload = parse_msg(my_msg)
     print("src={}, dst={}, msg_type={}, payload={}".format(src_uid, dst_uid, msg_type, payload))
