@@ -75,7 +75,7 @@ def main():
                 if '2' in message:
                     print "ERROR"
                 else:
-                    codes[count] = hex(int(message, 2))
+                    codes.append(hex(int(message, 2)))
                     print message, codes[count], count +1
                     count += 1
                     message = ''
