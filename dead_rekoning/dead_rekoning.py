@@ -39,6 +39,10 @@ def durToByte(duration):
     dct["garbage"] = abs(garbage- duration)
     return min(dct, key=dct.get)
 
+def process_code(codes):
+    print("Received codes: {}".format(codes))
+    signal_ringo("KEY_9")
+
 def main():
     binary = ''
     message = ''
@@ -70,9 +74,13 @@ def main():
                 if '2' in message:
                     print "ERROR"
                 else:
+                    codes[count] = hex(int(message, 2))
+                    print message, codes[count], count +1
                     count += 1
-                    print message, hex(int(message, 2)), count
                     message = ''
+                if count == 4:
+                    process_code(codes)
+                    codes = []
     p.wait()
 
 if __name__ == "__main__":
