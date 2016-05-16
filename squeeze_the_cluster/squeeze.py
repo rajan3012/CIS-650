@@ -253,7 +253,7 @@ class Supervisor(MQTT):
                 print
                 print("Received all results at {} completing tasks in {} seconds".format(finished-start))
                 print("The final tally for primes between {} and {} is {}".format(0, self.upper, total_primes))
-                print,
+                print
                 self.output_done = True
 
             self.check_publish_queue()
