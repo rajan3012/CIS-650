@@ -8,6 +8,7 @@ usage: squeeze.py <UID> <field(0), gate(1), neighbor1(2) , neighbor2(3)>
 """
 import sys
 from time import sleep
+from timeit import default_timer as timer
 import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 from math import sqrt, ceil
@@ -219,6 +220,9 @@ class Supervisor(MQTT):
     def duties(self):
         # main loop for a supervisor
 
+        start = timer()
+        print("Started time at {}".format(start))
+
         while not self.abort:
 
             # check for and handle incoming request and result messages
@@ -245,9 +249,11 @@ class Supervisor(MQTT):
                 total_primes = 0
                 for result in self.results.values():
                     total_primes += result.result
-                print()
+                finished = timer()
+                print
+                print("Received all results at {} completing tasks in {} seconds".format(finished-start))
                 print("The final tally for primes between {} and {} is {}".format(0, self.upper, total_primes))
-                print()
+                print,
                 self.output_done = True
 
             self.check_publish_queue()
@@ -294,7 +300,6 @@ def on_message(client, userdata, msg):
 #Callback method for LINDA topic
 def on_linda(client, userdata, msg):
     src_uid, dst_uid, msg_type, payload = parse_msg(msg)
-    #print("Received msg id={}, type={}, src={}, dst={}, payload={}".format(msg.id, msg_type, src_uid, dst_uid, payload))
     print("Received type={}, src={}, dst={}, payload={}".format(msg_type, src_uid, dst_uid, payload))
     if dst_uid == userdata.uid:
         print("Placing message into incoming queue")
