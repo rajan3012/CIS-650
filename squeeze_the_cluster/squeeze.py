@@ -47,7 +47,7 @@ class Task:
 
         worker_uid = None
         if len(fields) >= 4:
-            worker_uid = literal_eval(fields[3])
+            worker_uid = literal_eval(fields[3])[0]
 
         result = None
         if (len(fields) == 5) and (fields[4] != "None"):
