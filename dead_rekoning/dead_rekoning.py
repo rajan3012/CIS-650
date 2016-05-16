@@ -47,6 +47,7 @@ def main():
     binary = ''
     message = ''
     count = 0
+    codes = []
 
     #Popen(["sudo", "killall", "mode2"])
     #Popen(["sudo", "/etc/init.d/lirc", "stop"])
