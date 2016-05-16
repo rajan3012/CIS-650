@@ -251,7 +251,7 @@ class Supervisor(MQTT):
                     total_primes += result.result
                 finished = timer()
                 print
-                print("Received all results at {} completing tasks in {} seconds".format(finished-start))
+                print("Received all results in {} seconds".format(finished-start))
                 print("The final tally for primes between {} and {} is {}".format(0, self.upper, total_primes))
                 print
                 self.output_done = True
