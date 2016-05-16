@@ -339,12 +339,12 @@ def count_primes(bounds):
     if upper_bound <= 0:
         return 0
     if upper_bound == 1:
-        return 1
+        return 0
     if upper_bound == 2:
-        return 2
+        return 1
 
     if lower_bound < 3:
-        count = 2
+        count = 1
         lower_bound = 3
 
     for n in range(lower_bound, upper_bound + 1):
