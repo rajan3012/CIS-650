@@ -1,6 +1,21 @@
 import sys
 from subprocess import Popen, PIPE
 
+#####################################
+# Global Constants
+#####################################
+    # PREAMBLE
+    beginSend_firstNum = 9000
+    beginSend_secondNum = 4500
+    # DATA
+    data_zeroNum = 600
+    data_oneNum = 1600
+    # JUNK
+    garbage = 20000
+
+    # Total number of bytes to receive
+    NUM_BYTES_RCV = 4
+
 ######################################
 # Ringo Communication
 ######################################
@@ -8,17 +23,6 @@ def signal_ringo(remote_code):
     # SEND_START, SEND_STOP, SEND_ONCE)
     print("Signaling ringo")
     Popen(("irsend", "SEND_ONCE", "Ringo", remote_code))
-
-
-
-# PREAMBLE
-beginSend_firstNum = 9000
-beginSend_secondNum = 4500
-# DATA
-data_zeroNum = 600
-data_oneNum = 1600
-# JUNK
-garbage = 20000
 
 def processLine(line):
     reading = line.split()
@@ -43,15 +47,29 @@ def process_code(codes):
     print("Received codes: {}".format(codes))
     signal_ringo("KEY_9")
 
-def main():
+def init_lirc():
+    p = Popen(["sudo", "killall", "mode2"])
+    p.wait()
+    p = Popen(["sudo", "/etc/init.d/lirc", "stop"])
+    p.wait()
+    p = Popen(["mode2","-d", "/dev/lirc0"], stdout=PIPE,bufsize=1)
+    return p
+
+def reset_lirc(p):
+    p.terminate()
+    p.wait()
+
+    Popen(["sudo", "killall", "mode2"])
+    Popen(["sudo", "/etc/init.d/lirc", "start"])
+
+def ir_receive(p):
+    # Receive NUM_BYTES_RCV bytes of data including the preamble on subprocess p
+
     binary = ''
     message = ''
     count = 0
-    codes = []
+    codes = bytearray(4)
 
-    #Popen(["sudo", "killall", "mode2"])
-    #Popen(["sudo", "/etc/init.d/lirc", "stop"])
-    p = Popen(["mode2","-d", "/dev/lirc0"], stdout=PIPE,bufsize=1)
     with p.stdout:
         for line in iter(p.stdout.readline, b''): # b'' denotes a byte string literal
             #print line,
@@ -67,7 +85,8 @@ def main():
 
             # space and duration = 2
             if len(binary) == 2:
-                message = str(int(binary, 2)) + message
+                #message = str(int(binary, 2)) + message
+                message = message + str(int(binary,2))
                 binary = ''
 
             # 1 byte = 8 bits
@@ -75,14 +94,26 @@ def main():
                 if '2' in message:
                     print "ERROR"
                 else:
-                    codes.append(hex(int(message, 2)))
-                    print message, codes[count], count +1
+                    codes[count] = int(message, 2).to_byte(1,byteorder='big')
+                    print message, codes.hex(), count +1
                     count += 1
                     message = ''
                 if count == 4:
-                    process_code(codes)
-                    codes = []
-    p.wait()
+                    return codes
+
+
+
+def main():
+
+    p = init_lirc()
+
+    try:
+        while True:
+            codes = ir_receive(p)
+            process_code(codes)
+    except KeyboardInterrupt:
+        reset_lirc(p)
+
 
 if __name__ == "__main__":
     main()
