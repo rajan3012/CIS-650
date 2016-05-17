@@ -23,9 +23,10 @@ NUM_BYTES_RCV = 4
 ######################################
 def signal_ringo(remote_code):
     # SEND_START, SEND_STOP, SEND_ONCE)
+    on_led()
     print("Signaling ringo")
     Popen(("irsend", "SEND_ONCE", "Ringo", remote_code))
-    blink_led()
+    off_led()
 
 def processLine(line):
     reading = line.split()
@@ -104,15 +105,16 @@ def ir_receive():
             if '2' in message:
                 print "ERROR"
             else:
+                on_led()
                 codes.append(int(message, 2))
                 print message, hexlify(codes), count +1
                 count += 1
                 message = ''
+                off_led()
             if count == 4:
                 break
 
     reset_lirc(p)
-    blink_led(1)
     return codes
 
 def on_led():
