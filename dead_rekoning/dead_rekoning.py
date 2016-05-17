@@ -68,7 +68,7 @@ def ir_receive(p):
     binary = ''
     message = ''
     count = 0
-    codes = bytearray(4)
+    codes = bytearray()
 
     with p.stdout:
         for line in iter(p.stdout.readline, b''): # b'' denotes a byte string literal
@@ -94,7 +94,7 @@ def ir_receive(p):
                 if '2' in message:
                     print "ERROR"
                 else:
-                    codes[count] = int(message, 2).to_byte(1,byteorder='big')
+                    codes.append(int(message, 2))
                     print message, codes.hex(), count +1
                     count += 1
                     message = ''
