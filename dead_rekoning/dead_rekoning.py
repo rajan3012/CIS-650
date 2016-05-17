@@ -79,36 +79,35 @@ def ir_receive():
 
     p = init_mode2()
 
-    while p.stdout:
-        for line in iter(p.stdout.readline, b''): # b'' denotes a byte string literal
-            #print line,
-            line = processLine(line)
-            if line == "Preamble2": #start keeping track of durations
-                binary = ''
+    for line in iter(p.stdout.readline, b''): # b'' denotes a byte string literal
+        #print line,
+        line = processLine(line)
+        if line == "Preamble2": #start keeping track of durations
+            binary = ''
+            message = ''
+            count = 0
+        try:
+            binary += str(int(line))
+        except:
+            print line
+
+        # space and duration = 2
+        if len(binary) == 2:
+            #message = str(int(binary, 2)) + message
+            message = message + str(int(binary,2))
+            binary = ''
+
+        # 1 byte = 8 bits
+        if len(message) == 8:
+            if '2' in message:
+                print "ERROR"
+            else:
+                codes.append(int(message, 2))
+                print message, hexlify(codes), count +1
+                count += 1
                 message = ''
-                count = 0
-            try:
-                binary += str(int(line))
-            except:
-                print line
-
-            # space and duration = 2
-            if len(binary) == 2:
-                #message = str(int(binary, 2)) + message
-                message = message + str(int(binary,2))
-                binary = ''
-
-            # 1 byte = 8 bits
-            if len(message) == 8:
-                if '2' in message:
-                    print "ERROR"
-                else:
-                    codes.append(int(message, 2))
-                    print message, hexlify(codes), count +1
-                    count += 1
-                    message = ''
-                if count == 4:
-                    break
+            if count == 4:
+                break
 
     reset_lirc(p)
     return codes
