@@ -45,8 +45,8 @@ def durToByte(duration):
     return min(dct, key=dct.get)
 
 def process_code(codes):
-    print("Received codes: {}".format(codes))
-    #signal_ringo("KEY_9")
+    print("Received codes: {}".format(hexlify(codes)))
+    signal_ringo("KEY_9")
 
 def init_mode2():
     p = Popen(["sudo", "killall", "mode2"])
