@@ -4,17 +4,17 @@ from subprocess import Popen, PIPE
 #####################################
 # Global Constants
 #####################################
-    # PREAMBLE
-    beginSend_firstNum = 9000
-    beginSend_secondNum = 4500
-    # DATA
-    data_zeroNum = 600
-    data_oneNum = 1600
-    # JUNK
-    garbage = 20000
+# PREAMBLE
+beginSend_firstNum = 9000
+beginSend_secondNum = 4500
+# DATA
+data_zeroNum = 600
+data_oneNum = 1600
+# JUNK
+garbage = 20000
 
-    # Total number of bytes to receive
-    NUM_BYTES_RCV = 4
+# Total number of bytes to receive
+NUM_BYTES_RCV = 4
 
 ######################################
 # Ringo Communication
