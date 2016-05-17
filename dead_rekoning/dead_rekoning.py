@@ -1,6 +1,7 @@
 import sys
 from subprocess import Popen, PIPE
 from binascii import hexlify
+from grovepi import *
 
 #####################################
 # Global Constants
@@ -24,6 +25,7 @@ def signal_ringo(remote_code):
     # SEND_START, SEND_STOP, SEND_ONCE)
     print("Signaling ringo")
     Popen(("irsend", "SEND_ONCE", "Ringo", remote_code))
+    blink_led()
 
 def processLine(line):
     reading = line.split()
@@ -110,7 +112,17 @@ def ir_receive():
                 break
 
     reset_lirc(p)
+    blink_led()
     return codes
+
+def blink_led():
+    print("blinking my LED")
+    led = 4
+    pinMode(led, "output")
+    digitalWrite(led,1)
+    time.sleep(1)
+    digitalWrite(led,0)
+
 
 
 def main():
