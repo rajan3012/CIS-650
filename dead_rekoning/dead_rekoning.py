@@ -1,4 +1,4 @@
-import sys
+from time import sleep
 from subprocess import Popen, PIPE
 from binascii import hexlify
 from grovepi import *
@@ -127,7 +127,7 @@ def off_led():
 
 def blink_led(seconds):
     on_led()
-    sys.sleep(seconds)
+    sleep(seconds)
     off_led()
 
 def main():
