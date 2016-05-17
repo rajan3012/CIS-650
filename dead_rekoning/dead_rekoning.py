@@ -45,7 +45,7 @@ def durToByte(duration):
 
 def process_code(codes):
     print("Received codes: {}".format(codes))
-    signal_ringo("KEY_9")
+    #signal_ringo("KEY_9")
 
 def init_lirc():
     p = Popen(["sudo", "killall", "mode2"])
@@ -95,7 +95,7 @@ def ir_receive(p):
                     print "ERROR"
                 else:
                     codes.append(int(message, 2))
-                    print message, codes, count +1
+                    print message, hex(codes), count +1
                     count += 1
                     message = ''
                 if count == 4:
