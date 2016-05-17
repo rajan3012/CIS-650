@@ -116,7 +116,6 @@ def ir_receive():
     return codes
 
 def blink_led():
-    print("blinking my LED")
     led = 4
     pinMode(led, "output")
     digitalWrite(led,1)
