@@ -83,7 +83,6 @@ def ir_receive():
     p = init_mode2()
 
     for line in iter(p.stdout.readline, b''): # b'' denotes a byte string literal
-        #print line,
         line = processLine(line)
         if line == "Preamble2": #start keeping track of durations
             binary = ''
