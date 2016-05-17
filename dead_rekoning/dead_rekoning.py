@@ -1,5 +1,6 @@
 import sys
 from subprocess import Popen, PIPE
+from binascii import hexlify
 
 #####################################
 # Global Constants
@@ -62,6 +63,11 @@ def reset_lirc(p):
     Popen(["sudo", "killall", "mode2"])
     Popen(["sudo", "/etc/init.d/lirc", "start"])
 
+def byte_to_hex(b):
+    s = '0x'
+    for byte in b:
+        int(byte)
+
 def ir_receive(p):
     # Receive NUM_BYTES_RCV bytes of data including the preamble on subprocess p
 
@@ -95,7 +101,7 @@ def ir_receive(p):
                     print "ERROR"
                 else:
                     codes.append(int(message, 2))
-                    print message, hex(codes), count +1
+                    print message, hexlify(codes), count +1
                     count += 1
                     message = ''
                 if count == 4:
