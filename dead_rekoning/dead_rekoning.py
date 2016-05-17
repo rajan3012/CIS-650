@@ -112,7 +112,7 @@ def ir_receive():
                 break
 
     reset_lirc(p)
-    blink_led()
+    blink_led(1)
     return codes
 
 def on_led():
