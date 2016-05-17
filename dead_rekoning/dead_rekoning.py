@@ -95,7 +95,7 @@ def ir_receive(p):
                     print "ERROR"
                 else:
                     codes.append(int(message, 2))
-                    print message, codes.hex(), count +1
+                    print message, codes, count +1
                     count += 1
                     message = ''
                 if count == 4:
