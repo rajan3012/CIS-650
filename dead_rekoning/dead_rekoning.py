@@ -115,14 +115,20 @@ def ir_receive():
     blink_led()
     return codes
 
-def blink_led():
-    led = 4
+def on_led():
+    led=4
     pinMode(led, "output")
     digitalWrite(led,1)
-    time.sleep(1)
+
+def off_led():
+    led=4
+    pinMode(led, "output")
     digitalWrite(led,0)
 
-
+def blink_led(seconds):
+    on_led()
+    sys.sleep(seconds)
+    off_led()
 
 def main():
 
