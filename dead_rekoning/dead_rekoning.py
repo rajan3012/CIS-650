@@ -48,7 +48,7 @@ def process_code(codes):
     print("Received codes: {}".format(codes))
     #signal_ringo("KEY_9")
 
-def init_lirc():
+def init_mode2():
     p = Popen(["sudo", "killall", "mode2"])
     p.wait()
     p = Popen(["sudo", "/etc/init.d/lirc", "stop"])
@@ -59,16 +59,17 @@ def init_lirc():
 def reset_lirc(p):
     p.terminate()
     p.wait()
-
-    Popen(["sudo", "killall", "mode2"])
+    p = Popen(["sudo", "killall", "mode2"])
+    p.wait()
     Popen(["sudo", "/etc/init.d/lirc", "start"])
+    p.wait()
 
 def byte_to_hex(b):
     s = '0x'
     for byte in b:
         int(byte)
 
-def ir_receive(p):
+def ir_receive():
     # Receive NUM_BYTES_RCV bytes of data including the preamble on subprocess p
 
     binary = ''
@@ -76,7 +77,9 @@ def ir_receive(p):
     count = 0
     codes = bytearray()
 
-    with p.stdout:
+    p = init_mode2()
+
+    while p.stdout:
         for line in iter(p.stdout.readline, b''): # b'' denotes a byte string literal
             #print line,
             line = processLine(line)
@@ -105,20 +108,20 @@ def ir_receive(p):
                     count += 1
                     message = ''
                 if count == 4:
-                    return codes
+                    break
 
+    reset_lirc(p)
+    return codes
 
 
 def main():
 
-    p = init_lirc()
-
     try:
         while True:
-            codes = ir_receive(p)
+            codes = ir_receive()
             process_code(codes)
     except KeyboardInterrupt:
-        reset_lirc(p)
+        sys.exit()
 
 
 if __name__ == "__main__":
