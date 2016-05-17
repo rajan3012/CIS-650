@@ -107,7 +107,7 @@ def ir_receive():
             else:
                 on_led()
                 codes.append(int(message, 2))
-                print message, hexlify(codes), count +1
+                #print message, hexlify(codes), count +1
                 count += 1
                 message = ''
                 off_led()
