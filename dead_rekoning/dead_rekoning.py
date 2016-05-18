@@ -58,9 +58,9 @@ def process_code(codes):
         signal_ringo(GO_CODE)
 
 def init_mode2():
-    p = Popen(["sudo", "killall", "mode2"])
+    p = Popen(["sudo", "killall", "mode2", ">", "/dev/null"])
     p.wait()
-    p = Popen(["sudo", "/etc/init.d/lirc", "stop"])
+    p = Popen(["sudo", "/etc/init.d/lirc", "stop", ">" "/dev/null"])
     p.wait()
     p = Popen(["mode2","-d", "/dev/lirc0"], stdout=PIPE,bufsize=1)
     return p
