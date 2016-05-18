@@ -4,10 +4,14 @@ int leftOn, leftOff, rightOn, rightOff, rearOn, rearOff; //declare variables
 int leftDiff, rightDiff, rearDiff; //more variables
 
 int frontAvg, rearAvg;
+int flag;
 #define REMOTE_NUM 9
-#define SRC  0x00
-#define DST  0xFF
-byte msg[] = {0x68,0x97};
+#define SRC 0x00
+#define DST 0xFF
+#define CODE1 0x68
+#define CODE2 0x97
+//byte msg[] = {0x68,0x97};
+byte msg[] = {CODE1, CODE2};
 void setup()
 {
   //HardwareBegin(); //initialize Ringo’s circuitry
@@ -73,11 +77,11 @@ int sense_edge()
   if(frontAvg <=100) //black line detected
   {
     PlayChirp(100,100);
-    OnEyes(200,0,0);  //red - edge detected
+    //OnEyes(200,0,0);  //red - edge detected
     return 1;
     
   }
-  OnEyes(0,200,0); //green - no edge
+  //OnEyes(0,200,0); //green - no edge
   return 0;
 }
 
@@ -85,7 +89,8 @@ int moveForward()
 {
   Serial.print("\n***Moving***\n");
   Motors(30,32.5);  //Motors(LEFT, RIGHT);
-  //delay(500);
+  
+  delay(100);
   return 0;
 }
 
@@ -110,7 +115,9 @@ void loop()
          Serial.print("\n***key pressed***\n");
          //PlayAck();
          //edge_detected = 0;
+         //flag = 1;
          moveForward();
+         OnEyes(0,200,0);
          RxIRRestart(4);            // restart wait for 4 byte IR remote command
          break;
 
@@ -134,17 +141,25 @@ void loop()
   }*/
   
   Serial.print("\n***In loop***\n");
+  
   edge_detected = sense_edge();
   Serial.print("\nEdge detected?\n");
   Serial.print(edge_detected);
+
   if(edge_detected == 1)
-  {
-      Motors(0,0);
+  { 
+      //move till no edge
+      delay(200);
+      Motors(0,0); //kill motors
       PlayChirp(0,0);
-      SendIRMsg(SRC, DST, msg,2);
+      SendIRMsg(SRC, DST, msg, 2);
+      OffEyes();
+      //flag = 0;   
       //delay(1000);
       //edge_detected = 0;
   }
+
+  //flag = 0;
   //delay(2000);
   //moveForward();
 }
