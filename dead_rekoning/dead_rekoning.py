@@ -19,7 +19,7 @@ garbage = 20000
 NUM_BYTES_RCV = 4
 
 #Codes to listen for and send
-GO_CODE = 'KEY_9'
+GO_CODE = 'KEY_5'
 STOPPED_CODE = bytearray([0x00,0xff,0x68,0x97])
 
 ######################################
