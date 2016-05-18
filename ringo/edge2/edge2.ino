@@ -4,6 +4,7 @@ int leftOn, leftOff, rightOn, rightOff, rearOn, rearOff; //declare variables
 int leftDiff, rightDiff, rearDiff; //more variables
 
 int frontAvg, rearAvg;
+int flag;
 #define REMOTE_NUM 9
 #define SRC  0x00
 #define DST  0xFF
@@ -88,7 +89,8 @@ int moveForward()
 {
   Serial.print("\n***Moving***\n");
   Motors(30,32.5);  //Motors(LEFT, RIGHT);
-  //delay(500);
+  
+  delay(100);
   return 0;
 }
 
@@ -109,11 +111,15 @@ void loop()
         switch (button){            // activate a behavior based on which button was pressed
 
          case REMOTE_NUM:                    // Button 9, "Drive with remote control" behavior
-           delay(3000);
-           Serial.print("\n***key pressed***\n");
-           moveForward();
-           break;
-
+         delay(3000);
+         Serial.print("\n***key pressed***\n");
+         //PlayAck();
+         //edge_detected = 0;
+         //flag = 1;
+         moveForward();
+         OnEyes(0,200,0);
+         RxIRRestart(4);            // restart wait for 4 byte IR remote command
+         break;
          default:                   // if no match, break out and wait for a new code
            PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command          
            SwitchMotorsToSerial();
@@ -132,18 +138,24 @@ void loop()
   }*/
   
   Serial.print("\n***In loop***\n");
+  
   edge_detected = sense_edge();
   Serial.print("\nEdge detected?\n");
   Serial.print(edge_detected);
+
   if(edge_detected == 1)
-  {
-      Motors(0,0);
-      PlayChirp(0,0);
+  { 
+      //move till no edge
+      delay(200);
+      Motors(0,0); //kill motors
+      PlayChirp(0,0);<<<<<<< HEAD
       TxIR(code, sizeof(code));
       RxIRRestart(sizeof(code));
       //delay(1000);
       //edge_detected = 0;
   }
+
+  //flag = 0;
   //delay(2000);
   //moveForward();
 }
