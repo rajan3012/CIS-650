@@ -91,7 +91,7 @@ def ir_receive():
         try:
             binary += str(int(line))
         except:
-            print line
+            pass
 
         # space and duration = 2
         if len(binary) == 2:
