@@ -5,10 +5,10 @@ int leftDiff, rightDiff, rearDiff; //more variables
 
 int frontAvg, rearAvg;
 int flag;
-#define REMOTE_NUM 9
+#define REMOTE_NUM 5
 #define SRC  0x00
 #define DST  0xFF
-byte code[] = {0x00,0xff,0x68,0x97};
+byte code[] = {0x00,0xff,0x38,0xC7};
 
 void setup()
 {
@@ -76,7 +76,7 @@ int sense_edge()
   if(frontAvg <=100) //black line detected
   {
     PlayChirp(100,100);
-    OnEyes(200,0,0);  //red - edge detected
+    //OnEyes(200,0,0);  //red - edge detected
     delay(100);
     OffEyes();
     return 1;    
@@ -90,7 +90,7 @@ int moveForward()
   Serial.print("\n***Moving***\n");
   Motors(30,32.5);  //Motors(LEFT, RIGHT);
   
-  delay(100);
+  delay(50);
   return 0;
 }
 
@@ -117,7 +117,7 @@ void loop()
          //edge_detected = 0;
          //flag = 1;
          moveForward();
-         OnEyes(0,200,0);
+         //OnEyes(0,200,0);  //green
          RxIRRestart(4);            // restart wait for 4 byte IR remote command
          break;
          default:                   // if no match, break out and wait for a new code
@@ -146,9 +146,10 @@ void loop()
   if(edge_detected == 1)
   { 
       //move till no edge
-      delay(100);
+      //delay(100);
       Motors(0,0); //kill motors
       PlayChirp(0,0);
+      //OnEyes(0,0,0);
       TxIR(code, sizeof(code));
       RxIRRestart(sizeof(code));
       //delay(1000);
