@@ -18,6 +18,10 @@ garbage = 20000
 # Total number of bytes to receive
 NUM_BYTES_RCV = 4
 
+#Codes to listen for and send
+GO_CODE = 'KEY_9'
+STOPPED_CODE = b'0x00116897'
+
 ######################################
 # Ringo Communication
 ######################################
@@ -49,7 +53,8 @@ def durToByte(duration):
 
 def process_code(codes):
     print("Received codes: {}".format(hexlify(codes)))
-    signal_ringo("KEY_9")
+    if codes == STOPPED_CODE:
+        signal_ringo(GO_CODE)
 
 def init_mode2():
     p = Popen(["sudo", "killall", "mode2"])
@@ -133,10 +138,13 @@ def blink_led(seconds):
 
 def main():
 
+    distance = 0
+    move_by = 3
     try:
-        while True:
+        while distance < 18:
             codes = ir_receive()
             process_code(codes)
+            distance += move_by
     except KeyboardInterrupt:
         sys.exit()
 
