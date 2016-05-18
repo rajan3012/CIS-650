@@ -7,18 +7,20 @@ int frontAvg, rearAvg;
 #define REMOTE_NUM 9
 #define SRC  0x00
 #define DST  0xFF
-byte msg[] = {0x68,0x97};
+byte code[] = {0x00,0xff,0x68,0x97};
+
 void setup()
 {
-  //HardwareBegin(); //initialize Ringo’s circuitry
-  PlayStartChirp(); //play startup chirp and blink eyes
-  
+  HardwareBegin(); //initialize Ringo’s circuitry
+  PlayStartChirp(); //play startup chirp and blink eyes  
   RxIRRestart(4);         //wait for 4 byte IR remote command
   IsIRDone();
   GetIRButton();
   RestartTimer();
   Serial.begin(9600);
   OnEyes(0,0,200); //blue to start
+  delay(100);
+  OffEyes();
 }
 
 int sense_edge()
@@ -74,10 +76,11 @@ int sense_edge()
   {
     PlayChirp(100,100);
     OnEyes(200,0,0);  //red - edge detected
-    return 1;
-    
+    delay(100);
+    OffEyes();
+    return 1;    
   }
-  OnEyes(0,200,0); //green - no edge
+  //OnEyes(0,200,0); //green - no edge
   return 0;
 }
 
@@ -96,7 +99,7 @@ void loop()
 {
   
   restart:
-    byte button;
+  byte button;
 
   if(IsIRDone())  //wait for an IR remote control command to be received
   {                   
@@ -106,24 +109,19 @@ void loop()
         switch (button){            // activate a behavior based on which button was pressed
 
          case REMOTE_NUM:                    // Button 9, "Drive with remote control" behavior
-         delay(3000);
-         Serial.print("\n***key pressed***\n");
-         //PlayAck();
-         //edge_detected = 0;
-         moveForward();
-         RxIRRestart(4);            // restart wait for 4 byte IR remote command
-         break;
+           delay(3000);
+           Serial.print("\n***key pressed***\n");
+           moveForward();
+           break;
 
          default:                   // if no match, break out and wait for a new code
-         PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command
-         
-         SwitchMotorsToSerial();
-         Serial.print("button: ");
-         Serial.println(button);  // send button number pressed to serial window
-         RxIRRestart(4);            //wait for 4 byte IR remote command
-         break;
+           PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command          
+           SwitchMotorsToSerial();
+           Serial.print("button: ");
+           Serial.println(button);  // send button number pressed to serial window
         }
-       }
+      }
+  RxIRRestart(4);
   }
   /*
   edge = LookForEdge();
@@ -141,7 +139,8 @@ void loop()
   {
       Motors(0,0);
       PlayChirp(0,0);
-      SendIRMsg(SRC, DST, msg,2);
+      TxIR(code, sizeof(code));
+      RxIRRestart(sizeof(code));
       //delay(1000);
       //edge_detected = 0;
   }
