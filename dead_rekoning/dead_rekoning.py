@@ -51,11 +51,13 @@ def durToByte(duration):
     dct["garbage"] = abs(garbage- duration)
     return min(dct, key=dct.get)
 
-def process_code(codes):
+def process_code(codes, distance):
     print("Received codes: {}".format(hexlify(codes)))
     print("expected codes: {}".format(hexlify(STOPPED_CODE)))
     if codes == STOPPED_CODE:
         signal_ringo(GO_CODE)
+        return distance
+    return 0
 
 def init_mode2():
     p = Popen(["sudo", "killall", "mode2"])
@@ -144,8 +146,7 @@ def main():
     try:
         while distance < 18:
             codes = ir_receive()
-            process_code(codes)
-            distance += move_by
+            distance += process_code(codes, move_by)
     except KeyboardInterrupt:
         sys.exit()
 
