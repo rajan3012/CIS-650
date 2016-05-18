@@ -535,7 +535,7 @@ uint16_t IRPrevTime=0,IRTime;
 uint32_t MsAtLastIR=0;//used for end of communication timeout
 volatile char IRReceiving=0;
 char IRActive=0;
-char IRMaxByteCount=20;
+char IRMaxByteCount=4;
 
 
 void RxIRRestart(char BytesToLookFor){//Ver. 1.2, Dustin Soodak
@@ -580,7 +580,7 @@ void IRHandler(void){//Ver. 2.0, Dustin Soodak, Kevin King
   IRTime=TCNT1;
    
   Level=digitalRead(_38kHz_Rx);  
-  
+
   if(!Level){//note; 38khz IR signal makes level go low
     IRReceiving=1;
   }
