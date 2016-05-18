@@ -53,6 +53,7 @@ def durToByte(duration):
 
 def process_code(codes):
     print("Received codes: {}".format(hexlify(codes)))
+    print("expected codes: {}".format(hexlify(STOPPED_CODE)))
     if codes == STOPPED_CODE:
         signal_ringo(GO_CODE)
 
