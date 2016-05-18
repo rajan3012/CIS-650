@@ -149,7 +149,7 @@ void loop()
   if(edge_detected == 1)
   { 
       //move till no edge
-      delay(200);
+      delay(100);
       Motors(0,0); //kill motors
       PlayChirp(0,0);
       SendIRMsg(SRC, DST, msg, 2);
