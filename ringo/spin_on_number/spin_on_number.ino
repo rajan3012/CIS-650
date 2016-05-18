@@ -29,8 +29,13 @@ Visit http://www.arduino.cc to learn about the Arduino.
 
 #include "RingoHardware.h"
 #include "Behaviors.h"
+#include "IRCommunication.h"
 
-#define REMOTE_NUM 2
+#define SRC 0x00
+#define DST 0xFF
+#define CODE1 0x68
+#define CODE2 0x97
+#define REMOTE_NUM 9
 
 void setup(){
   HardwareBegin();        //initialize Ringo's brain to work with his circuitry
@@ -53,12 +58,17 @@ int presentDirection = 0;
 int hue = 0;
 int hueOpposite = 180;
 // end global variables used by Color Wheel example
-    
+
+byte CODE[] = {CODE1, CODE2};
+
 void loop(){
 
   restart:              //label to cause program to come back to here if "MENU" on remote is pressed in any example
   
    byte button = 0;
+
+  // send message tht I am stoped
+  SendIRMsg(SRC, DST, CODE, 2);
 
   if(GetTime()>1000){   //blink rear pixel once a second to indicate Ringo is in "Menu" mode
       SetPixelRGB(0,0,0,100);   // turn on rear tail light to BLUE
