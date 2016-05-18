@@ -6,23 +6,22 @@ int leftDiff, rightDiff, rearDiff; //more variables
 int frontAvg, rearAvg;
 int flag;
 #define REMOTE_NUM 9
-#define SRC 0x00
-#define DST 0xFF
-#define CODE1 0x68
-#define CODE2 0x97
-//byte msg[] = {0x68,0x97};
-byte msg[] = {CODE1, CODE2};
+#define SRC  0x00
+#define DST  0xFF
+byte code[] = {0x00,0xff,0x68,0x97};
+
 void setup()
 {
-  //HardwareBegin(); //initialize Ringo’s circuitry
-  PlayStartChirp(); //play startup chirp and blink eyes
-  
+  HardwareBegin(); //initialize Ringo’s circuitry
+  PlayStartChirp(); //play startup chirp and blink eyes  
   RxIRRestart(4);         //wait for 4 byte IR remote command
   IsIRDone();
   GetIRButton();
   RestartTimer();
   Serial.begin(9600);
   OnEyes(0,0,200); //blue to start
+  delay(100);
+  OffEyes();
 }
 
 int sense_edge()
@@ -77,9 +76,10 @@ int sense_edge()
   if(frontAvg <=100) //black line detected
   {
     PlayChirp(100,100);
-    //OnEyes(200,0,0);  //red - edge detected
-    return 1;
-    
+    OnEyes(200,0,0);  //red - edge detected
+    delay(100);
+    OffEyes();
+    return 1;    
   }
   //OnEyes(0,200,0); //green - no edge
   return 0;
@@ -101,7 +101,7 @@ void loop()
 {
   
   restart:
-    byte button;
+  byte button;
 
   if(IsIRDone())  //wait for an IR remote control command to be received
   {                   
@@ -120,17 +120,14 @@ void loop()
          OnEyes(0,200,0);
          RxIRRestart(4);            // restart wait for 4 byte IR remote command
          break;
-
          default:                   // if no match, break out and wait for a new code
-         PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command
-         
-         SwitchMotorsToSerial();
-         Serial.print("button: ");
-         Serial.println(button);  // send button number pressed to serial window
-         RxIRRestart(4);            //wait for 4 byte IR remote command
-         break;
+           PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command          
+           SwitchMotorsToSerial();
+           Serial.print("button: ");
+           Serial.println(button);  // send button number pressed to serial window
         }
-       }
+      }
+  RxIRRestart(4);
   }
   /*
   edge = LookForEdge();
@@ -152,9 +149,8 @@ void loop()
       delay(100);
       Motors(0,0); //kill motors
       PlayChirp(0,0);
-      SendIRMsg(SRC, DST, msg, 2);
-      OffEyes();
-      //flag = 0;   
+      TxIR(code, sizeof(code));
+      RxIRRestart(sizeof(code));
       //delay(1000);
       //edge_detected = 0;
   }

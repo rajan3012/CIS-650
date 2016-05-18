@@ -100,8 +100,8 @@ def ir_receive():
 
         # space and duration = 2
         if len(binary) == 2:
-            #message = str(int(binary, 2)) + message
-            message = message + str(int(binary,2))
+            message = str(int(binary, 2)) + message
+            #message = message + str(int(binary,2))
             binary = ''
 
         # 1 byte = 8 bits
