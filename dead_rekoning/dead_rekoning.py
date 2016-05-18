@@ -70,8 +70,9 @@ def reset_lirc(p):
     p.wait()
     p = Popen(["sudo", "killall", "mode2"])
     p.wait()
-    Popen(["sudo", "/etc/init.d/lirc", "start"])
+    p = Popen(["sudo", "/etc/init.d/lirc", "start"])
     p.wait()
+    print("lirc start return code={}".format(p.returncode))
 
 def byte_to_hex(b):
     s = '0x'
