@@ -149,6 +149,8 @@ def main():
     except KeyboardInterrupt:
         sys.exit()
 
-
+    print("Moved 18 inches, time to rest")
+    sys.exit()
+    
 if __name__ == "__main__":
     main()
