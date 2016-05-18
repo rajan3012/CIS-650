@@ -60,7 +60,7 @@ def process_code(codes):
 def init_mode2():
     p = Popen(["sudo", "killall", "mode2"])
     p.wait()
-    p = Popen(["sudo", "/etc/init.d/lirc"])
+    p = Popen(["sudo", "/etc/init.d/lirc", "stop"])
     p.wait()
     p = Popen(["mode2","-d", "/dev/lirc0"], stdout=PIPE,bufsize=1)
     return p
