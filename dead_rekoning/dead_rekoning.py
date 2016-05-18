@@ -20,7 +20,7 @@ NUM_BYTES_RCV = 4
 
 #Codes to listen for and send
 GO_CODE = 'KEY_9'
-STOPPED_CODE = bytes(int(0x00116897))
+STOPPED_CODE = bytes(b'000011110110100010010111')
 
 ######################################
 # Ringo Communication
