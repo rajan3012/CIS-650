@@ -74,10 +74,6 @@ def reset_lirc(p):
     p.wait()
     print("lirc start return code={}".format(p.returncode))
 
-def byte_to_hex(b):
-    s = '0x'
-    for byte in b:
-        int(byte)
 
 def ir_receive():
     # Receive NUM_BYTES_RCV bytes of data including the preamble on subprocess p
@@ -142,6 +138,9 @@ def main():
 
     distance = 0
     move_by = 3
+
+    signal_ringo(GO_CODE)
+
     try:
         while distance < 18:
             codes = ir_receive()
