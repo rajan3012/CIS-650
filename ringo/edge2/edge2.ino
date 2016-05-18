@@ -148,7 +148,7 @@ void loop()
       //move till no edge
       delay(200);
       Motors(0,0); //kill motors
-      PlayChirp(0,0);<<<<<<< HEAD
+      PlayChirp(0,0);
       TxIR(code, sizeof(code));
       RxIRRestart(sizeof(code));
       //delay(1000);
