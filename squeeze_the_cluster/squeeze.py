@@ -8,6 +8,7 @@ usage: squeeze.py <UID> <field(0), gate(1), neighbor1(2) , neighbor2(3)>
 """
 import sys
 from time import sleep
+from timeit import default_timer as timer
 import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 from math import sqrt, ceil
@@ -46,10 +47,14 @@ class Task:
 
         worker_uid = None
         if len(fields) >= 4:
+<<<<<<< HEAD
             worker_uid = literal_eval(fields[3])
+=======
+            worker_uid = literal_eval(fields[3])[0]
+>>>>>>> 39c3dff0ee16d8538ced066406179ea1b4b3b66f
 
         result = None
-        if len(fields) == 5:
+        if (len(fields) == 5) and (fields[4] != "None"):
             result = int(fields[4])
 
         return cls(uid, lo, up, worker_uid, result)
@@ -60,6 +65,9 @@ class Task:
             s = Msg.result
         return ':'.join([s, str(self.uid), str(self.lo), str(self.up), str(self.worker_uid), str(self.result)])
 
+class Fake_Message:
+    def __init__(self,payload):
+        self.payload = payload
 
 #############################################
 ## MQTT settings
@@ -135,7 +143,7 @@ class Worker(MQTT):
                     my_task = Task.from_payload(payload)
                     my_task.result = mp_count_primes(my_task.lo, my_task.up)
                     payload = str(my_task)
-                    msg = ':'.join(['0',str(self.uid), payload])
+                    msg = ':'.join([str(self.uid), '0', payload])
                     self.publish(msg)
                 elif msg_type == Msg.stop:
                     self.abort = True
@@ -196,7 +204,7 @@ class Supervisor(MQTT):
             new_msg = ':'.join(['0',str(uid),str(send_task)])
         elif len(self.pending) > 0:
             # send out a pending task assigned to fewest workers
-            send_task = min(self.pending.values, key=lambda v: len(v.worker_uid))
+            send_task = min(self.pending.values(), key=lambda v: len(v.worker_uid))
             send_task.worker_uid.append(uid)
             new_msg = ':'.join(['0',str(uid),str(send_task)])
         else:
@@ -210,11 +218,14 @@ class Supervisor(MQTT):
             self.results[result.uid] = result
         if result.uid in self.pending:
             del(self.pending[result.uid])
-            if len(self.pending) == 0:
+            if (self.bag.qsize() == 0) and (len(self.pending) == 0):
                 self.done = True
 
     def duties(self):
         # main loop for a supervisor
+
+        start = timer()
+        print("Started time at {}".format(start))
 
         while not self.abort:
 
@@ -240,11 +251,13 @@ class Supervisor(MQTT):
             if self.done and not self.output_done:
                 # output the final tally
                 total_primes = 0
-                for result in self.results:
+                for result in self.results.values():
                     total_primes += result.result
-                print()
+                finished = timer()
+                print
+                print("Received all results in {} seconds".format(finished-start))
                 print("The final tally for primes between {} and {} is {}".format(0, self.upper, total_primes))
-                print()
+                print
                 self.output_done = True
 
             self.check_publish_queue()
@@ -279,9 +292,9 @@ def on_will(client, userdata, msg):
     elif userdata.role == Role.supervisor:
         # construct a 'dead' message and place into incoming queue
         fields = msg.payload.split(' ')
-        dead_uid = fields[1]
+        dead_uid = fields[2]
         dead_msg = ':'.join([str(dead_uid), '0', Msg.dead])
-        userdata.incoming.put(dead_msg)
+        userdata.incoming.put(Fake_Message(dead_msg))
 
 #Called when a message has been received on a subscribed topic (unfiltered)
 def on_message(client, userdata, msg):
@@ -291,7 +304,6 @@ def on_message(client, userdata, msg):
 #Callback method for LINDA topic
 def on_linda(client, userdata, msg):
     src_uid, dst_uid, msg_type, payload = parse_msg(msg)
-    #print("Received msg id={}, type={}, src={}, dst={}, payload={}".format(msg.id, msg_type, src_uid, dst_uid, payload))
     print("Received type={}, src={}, dst={}, payload={}".format(msg_type, src_uid, dst_uid, payload))
     if dst_uid == userdata.uid:
         print("Placing message into incoming queue")
@@ -331,12 +343,12 @@ def count_primes(bounds):
     if upper_bound <= 0:
         return 0
     if upper_bound == 1:
-        return 1
+        return 0
     if upper_bound == 2:
-        return 2
+        return 1
 
     if lower_bound < 3:
-        count = 2
+        count = 1
         lower_bound = 3
 
     for n in range(lower_bound, upper_bound + 1):
@@ -356,6 +368,7 @@ def mp_count_primes(lower_bound, upper_bound):
     range = (upper_bound - lower_bound) // cpu_count()
     counts = pool.map(count_primes, chunks(lower_bound, upper_bound, range))
     count = reduce(lambda a, b: a+b, counts)
+    pool.terminate()
     return count
 
 

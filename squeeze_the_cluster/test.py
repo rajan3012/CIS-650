@@ -13,6 +13,7 @@ assert count_primes((0,2)) == 2
 assert count_primes((0,1000)) == 169
 assert mp_count_primes(0,1000) == 169
 
+print("primes between 0-10000: {}".format(count_primes((0,10000))))
 
 # message parsing
 class Test_Msg:
