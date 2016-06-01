@@ -15,6 +15,7 @@ import subprocess
 from time import sleep
 #from enum import Enum
 
+MY_KEY = "KEY_2"
 
 class States:
     active = 0
@@ -82,6 +83,8 @@ def on_message(client, userdata, msg):
 # Use a single callback select by state, basically replace former call backs with elif blocks
 def on_topic(client, userdata, msg):
 
+    print("received msg={}".format(msg.payload))
+
     if userdata.state == States.active:
         print "in active--- msg received: {}".format(msg.payload)
         message_name, uid = parse_msg(msg.payload)
@@ -126,6 +129,11 @@ def on_topic(client, userdata, msg):
         elif msg.payload.startswith('blink_LED'):
             send_token(client, userdata)
             blink_led()
+
+        elif msg.payload.startswith('signal_ringo'):
+            blink_led()
+            signal_ringo()
+            send_token(client, userdata)
 
     else:
         print "ERROR: in an undefined state!"
@@ -206,10 +214,11 @@ def send_primes(client, userdata, lower_bound, count):
     userdata.wait_on_publish = True
 
 def send_token(client,userdata):
-    payload = 'blink_LED:'
+    payload = 'signal_ringo:'
     print "Publishing msg {} to {}".format(payload, userdata.publish_topic)
     client.publish(userdata.publish_topic, payload, userdata.qos, True)
     userdata.wait_on_publish = True
+
 
 ##################################################
 ## Utility functions
@@ -240,6 +249,7 @@ def count_primes(lower_bound, upper_bound):
     print "Found {} primes between {} and {} in {}".format(count, lower_bound, upper_bound, end-start)
 
 def blink_led():
+    print("blinking my LED")
     led = 4
     pinMode(led, "output")
     digitalWrite(led,1)
@@ -248,7 +258,9 @@ def blink_led():
 
 def signal_ringo():
     # SEND_START, SEND_STOP, SEND_ONCE)
-    subprocess.popen(("irsend", "SEND_START", "Ringo", "Key-3"))
+    print("Signaling ringo")
+    subprocess.Popen(("irsend", "SEND_ONCE", "Ringo", MY_KEY))
+    sleep(2)
 
 def main():
     #############################################
