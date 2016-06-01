@@ -129,6 +129,7 @@ def on_topic(client, userdata, msg):
 ################################################
 ## State Functions
 ################################################
+
 def decide(client, userdata, uid):
     print "State changed to decide"
     userdata.state = States.decide

@@ -252,7 +252,7 @@ def signal_ringo():
 
 def main():
     #############################################
-    ## Get UID and upstram_UID from args
+    ## Get UID and upstream_UID from args
     #############################################
 
     if len(sys.argv) != 3:
