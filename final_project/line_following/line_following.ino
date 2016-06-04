@@ -75,66 +75,66 @@ int sense_edge()
   frontAvg = (leftOn + rightOn)/2;
   //rearAvg = rearOn;
   
-  //if(rearAvg <=100)
-  
-  
-  if(frontAvg >= 100) //both front sensors detect white
-  {
-    Serial.print("\n***");
-    Serial.println("lefton\trighton\tFrontAvg\n");
-    Serial.print(leftOn); // print the results to the serial window
-    Serial.print(" ");
-    Serial.print(rightOn); // print the results to the serial window
-    Serial.print(" ");
-    Serial.print(frontAvg); // print the results to the serial window
-    Serial.println(" ");
-    
-    Serial.print("\nBoth sensors detected white");
-    Serial.print("\nFrontAvg Val =");
-    Serial.print(frontAvg);
-    Serial.print("\n***");
-    //PlayChirp(100,100);
-    //OnEyes(100,100,100);  //green - right sensor detects black
-  }
-  else
-  {
-    if(leftOn <100 && rightOn >=100) //black detected by left sensor
+     if(leftOn <100 && rightOn >=100) //WHITE detected by RIGHT sensor,  BLACK detected by LEFT sensor
     {
-      Serial.print("\n***");
+      Serial.print("\n****");
       Serial.println("lefton\trighton\tFront Avg\n");
       Serial.print(leftOn); // print the results to the serial window
       Serial.print(" ");
-      Serial.print(rightOn); // print the results to the serial window
-      Serial.print(" ");
-      Serial.print(frontAvg); // print the results to the serial window
-      Serial.println(" ");
-      
-      Serial.print("\n*****Left sensor detected black  \nLeftSensor Val =");
+      Serial.println(rightOn); // print the results to the serial window
+
+      Serial.print("\n*****LEFT sensor detected BLACK  \nLeftSensor Val =");
       Serial.print(leftOn); // print the results to the serial window
       Serial.print("\n***");
       //PlayChirp(100,100);
       //OnEyes(200,0,0);  //red - left sensor detects black
       //return 1;
-    }
-    else if(rightOn <100 && leftOn >=100) //black detected by right sensor
+    }  
+    else if(rightOn <100 && leftOn >=100) //WHITE detected by LEFT sensor and BLACK detected by RIGHT sensor
     {
       Serial.print("\n***");
-      Serial.println("lefton\trighton\tFront Avg\n");
+      Serial.println("lefton\trighton\n");
       Serial.print(leftOn); // print the results to the serial window
       Serial.print(" ");
       Serial.print(rightOn); // print the results to the serial window
       Serial.print(" ");
-      Serial.print(frontAvg); // print the results to the serial window
-      Serial.println(" ");
-      
-      Serial.print("\nRight sensor detected black \nRightSensor Val =");
-      Serial.print(rightOn); // print the results to the serial window
+      Serial.print("\n*****RIGHT sensor detected BLACK  \nRightSensor Val =");
+      Serial.print(leftOn); // print the results to the serial window
       Serial.print("\n***");
       //PlayChirp(100,100);
       //OnEyes(0,200,0);  //green - right sensor detects black
       //return 1;
     }
-  }
+   
+
+    else if(leftOn <100 && rightOn < 100) //Both detected BLACK
+    {
+      Serial.print("\n***");
+      Serial.println("lefton\trighton\n");
+      Serial.print(leftOn); // print the results to the serial window
+      Serial.print(" ");
+      Serial.println(rightOn); // print the results to the serial window
+
+      //PlayChirp(100,100);
+      //OnEyes(200,0,0);  //red - left sensor detects black
+      //return 1;
+       Serial.print(" BOTH DETECTED BLACK!");
+    }
+    else if(rightOn >=100 && leftOn >=100) //both detected WHITE
+    {
+      Serial.print("\n***");
+      Serial.println("lefton\trighton\n");
+      Serial.print(leftOn); // print the results to the serial window
+      Serial.print(" ");
+      Serial.println(rightOn); // print the results to the serial window
+
+      //PlayChirp(100,100);
+      //OnEyes(0,200,0);  //green - right sensor detects black
+      //return 1;
+       Serial.print("BOTH SENSORS DETECTED WHITE!");
+    }
+    
+ 
   
   delay(1000);
   //OnEyes(0,200,0); //green - no edge
