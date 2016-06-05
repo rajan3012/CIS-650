@@ -21,7 +21,7 @@ void setup()
   //OnEyes(0,0,200); //blue to start
 }
 
-int sense_edge()
+void sense_edge()
 {
   /*
    * the bug detects white around a black. makes it seem like it's following a black line. 
@@ -87,7 +87,7 @@ int sense_edge()
       Serial.print(leftOn); // print the results to the serial window
       Serial.print("\n***");
       //PlayChirp(100,100);
-      //OnEyes(200,0,0);  //red - left sensor detects black
+      OnEyes(200,0,0);  //red - left sensor detects black
       //return 1;
     }  
     else if(rightOn <100 && leftOn >=100) //WHITE detected by LEFT sensor and BLACK detected by RIGHT sensor
@@ -102,11 +102,9 @@ int sense_edge()
       Serial.print(leftOn); // print the results to the serial window
       Serial.print("\n***");
       //PlayChirp(100,100);
-      //OnEyes(0,200,0);  //green - right sensor detects black
-      //return 1;
+      OnEyes(0,200,0);  //green - right sensor detects black
+      //return 2;
     }
-   
-
     else if(leftOn <100 && rightOn < 100) //Both detected BLACK
     {
       Serial.print("\n***");
@@ -116,9 +114,9 @@ int sense_edge()
       Serial.println(rightOn); // print the results to the serial window
 
       //PlayChirp(100,100);
-      //OnEyes(200,0,0);  //red - left sensor detects black
-      //return 1;
-       Serial.print(" BOTH DETECTED BLACK!");
+      OnEyes(0,0,200);  //blue - both detected black
+      Serial.print(" BOTH DETECTED BLACK!");
+      //return 4;
     }
     else if(rightOn >=100 && leftOn >=100) //both detected WHITE
     {
@@ -129,9 +127,10 @@ int sense_edge()
       Serial.println(rightOn); // print the results to the serial window
 
       //PlayChirp(100,100);
-      //OnEyes(0,200,0);  //green - right sensor detects black
-      //return 1;
-       Serial.print("BOTH SENSORS DETECTED WHITE!");
+      OnEyes(50,50,50);  //white - both detected white
+      
+      Serial.print("BOTH SENSORS DETECTED WHITE!");
+      //return 3;
     }
     
  
@@ -199,14 +198,35 @@ void loop()
   //Serial.print("\nEdge detected?\n");
   //Serial.print(edge_detected);
   /*
-  if(edge_detected == 1)
+  if(edge_detected == 1) //left sensor detected back - mover right motor
   {
+      Motors(0,50);
+      delay(500);
       Motors(0,0);
-      PlayChirp(0,0);
-      SendIRMsg(SRC, DST, msg,2);
+      //PlayChirp(0,0);
+      //SendIRMsg(SRC, DST, msg,2);
       //delay(1000);
       //edge_detected = 0;
-  }*/
+  }
+  else if(edge_detected == 2)
+  {
+    Motors(50,0);
+    delay(500);
+    Motors(0,0);  
+  }
+  else if(edge_detected == 3)
+  {
+    Motors(50,50);
+    delay(1000);
+    Motors(0,0);
+  }
+  else if(edge_detected == 3)
+  {
+    Motors(0,0);
+    delay(500);
+    //Motors(0,0);
+  }
+  */
   delay(2000);
   //moveForward();
 }
