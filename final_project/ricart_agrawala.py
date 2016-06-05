@@ -153,6 +153,9 @@ class MQTT:
 
 
     def check_publish_queue(self):
+        """
+        non-threaded version
+        """
         if not self.pub_pending and not self.outgoing.empty():
             try:
                 topic, payload = self.outgoing.get_nowait()
@@ -195,6 +198,7 @@ class MQTT:
         self.client.loop_stop()
         self.client.disconnect()
         self.abort = True
+        self.pub_event.set()
         self.publisher.join()
 
 
