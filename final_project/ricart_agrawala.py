@@ -123,7 +123,6 @@ class MQTT:
     def publish(self, topic,  payload):
         # always push onto queue in case we are processing
         # queue from a different thread
-        self.pub_pending = True
         self.outgoing.put( (topic, payload) )
         print('{} placed msg {}/{} into outgoing queue'.format(self.uid, topic, payload))
         self.pub_event.set()
