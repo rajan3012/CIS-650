@@ -150,10 +150,12 @@ int moveForward()
 
 int edge_detected = 0;
 char edge;
+bool detect_flag = false;
 
 void loop()
 {
-  /*
+
+  
   restart:
     byte button;
 
@@ -167,9 +169,10 @@ void loop()
          case REMOTE_NUM:                    // Button 9, "Drive with remote control" behavior
          delay(3000);
          Serial.print("\n***key pressed***\n");
-         //PlayAck();
+         PlayAck();
          //edge_detected = 0;
-         moveForward();
+         //moveForward();
+         detect_flag = true;
          RxIRRestart(4);            // restart wait for 4 byte IR remote command
          break;
 
@@ -183,7 +186,7 @@ void loop()
          break;
         }
        }
-  }*/
+  }
   /*
   edge = LookForEdge();
   if(FrontEdgeDetected(edge))
@@ -194,43 +197,48 @@ void loop()
   
   Serial.print("\n***In loop***\n");
   //sense_edge();
-  edge_detected = sense_edge();
-  //Serial.print("\nEdge detected?\n");
-  //Serial.print(edge_detected);
- 
-  if(edge_detected == 1) //left sensor detected back - mover right motor
+  if(detect_flag == true)
   {
-      Serial.print("Left Detected Black, Move Right motor");
-      Motors(0,30);
+    edge_detected = sense_edge();
+    
+    //Serial.print("\nEdge detected?\n");
+    //Serial.print(edge_detected);
+   
+    if(edge_detected == 1) //left sensor detected back - mover right motor
+    {
+        Serial.print("Left Detected Black, Move Right motor");
+        Motors(0,30);
+        delay(300);
+        Motors(30,32.5);
+        //PlayChirp(0,0);
+        //SendIRMsg(SRC, DST, msg,2);
+        //delay(1000);
+        //edge_detected = 0;
+    }
+    else if(edge_detected == 2)
+    {
+      Serial.print("Right Detected Black, Move Left motor");
+      Motors(30,0);
       delay(300);
+      Motors(30,32.5);  
+    }
+    else if(edge_detected == 3)
+    {
+      Serial.print("Continue moving - following the line!");
       Motors(30,32.5);
-      //PlayChirp(0,0);
-      //SendIRMsg(SRC, DST, msg,2);
-      //delay(1000);
-      //edge_detected = 0;
+      //delay(300);
+      //Motors(0,0);
+    }
+    else if(edge_detected == 4)
+    {
+      Serial.print("Stop! Reached the end!");
+      Motors(0,0);
+      detect_flag = false;
+      //delay(2000);
+      //Motors(0,0);
+    }
   }
-  else if(edge_detected == 2)
-  {
-    Serial.print("Right Detected Black, Move Left motor");
-    Motors(30,0);
-    delay(300);
-    Motors(30,32.5);  
-  }
-  else if(edge_detected == 3)
-  {
-    Serial.print("Continue moving - following the line!");
-    Motors(30,32.5);
-    //delay(300);
-    //Motors(0,0);
-  }
-  else if(edge_detected == 4)
-  {
-    Serial.print("Stop! Reached the end!");
-    Motors(0,0);
-    delay(2000);
-    //Motors(0,0);
-  }
-  
+    
   //delay(300);
   //moveForward();
 }
