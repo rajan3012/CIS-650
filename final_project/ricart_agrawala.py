@@ -16,7 +16,8 @@ import sys
 import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 from random import randint
-from threading import Event
+from threading import Thread, Event
+#import grovepi
 
 class Role:
     supervisor  = 0
@@ -73,6 +74,10 @@ class MQTT:
         self.outgoing = Queue()
         self.pub_pending = False # waiting for a publish confirmation
 
+        # publisher, concurrent thread processing outgoing messages
+        self.publisher = Thread(target=self.process_outgoing)
+        self.pub_event = Event()
+
     def register(self):
         """
         Instantiates client, registers call backs, and performs initial subscriptions with broker
@@ -112,13 +117,38 @@ class MQTT:
         # run network loop from a separate thread
         self.client.loop_start()
 
+        # start publish thread
+        self.publisher.start()
+
     def publish(self, topic,  payload):
-        if self.pub_pending or not self.outgoing.empty():
-            self.outgoing.put( (topic, payload) )  # this is a blocking put
-        else: # if the queue is empty and nothing pending just go ahead and publish
-            self.pub_pending = True
-            print("Publishing message {}, on topic {}".format(topic, payload))
-            self.client.publish(topic, payload, self.qos)
+        # always push onto queue in case we are processing
+        # queue from a different thread
+        self.pub_pending = True
+        self.outgoing.put( (topic, payload))
+        self.pub_event.set()
+
+    def process_outgoing(self):
+        """
+        Run in a thread to process outgoing queue as messasges are added.
+        Spin waits on pub_pending to process all messages in the queue. Once
+        queue is empty waits on pub_event
+        """
+
+        while not self.abort:
+            if not self.pub_pending and not self.outgoing.empty():
+                try:
+                    topic, payload = self.outgoing.get_nowait()
+                except Empty:
+                    continue # nothing to do
+                self.pub_pending = True
+                print("Publishing message {}, on topic {}".format(topic, payload))
+                self.client.publish(topic, payload, self.qos)
+                self.outgoing.task_done()
+            elif self.outgoing.empty():
+                # wait on publish event
+                self.pub_event.wait()
+                self.pub_event.clear()
+
 
     def check_publish_queue(self):
         if not self.pub_pending and not self.outgoing.empty():
@@ -129,6 +159,7 @@ class MQTT:
             self.pub_pending = True
             print("Publishing message {}, on topic {}".format(topic, payload))
             self.client.publish(topic, payload, self.qos)
+            self.outgoing.task_done()
 
     def process_incoming(self, payload):
         """
@@ -198,7 +229,6 @@ class Ricart_Agrawala(MQTT):
 
         self.func_critical = None
 
-        self.register()
 
     def reap(self, uid, role):
         """
@@ -231,9 +261,7 @@ class Ricart_Agrawala(MQTT):
             if self.count == self.need:
                 self.start_critical()
 
-            # otherwise do other stuff
-            self.check_publish_queue()
-            #self.client.loop()
+           #self.client.loop()
             self.non_critical_section()
 
     def start_critical(self):
@@ -345,7 +373,7 @@ class Ricart_Agrawala(MQTT):
         """
         print('{} is in a non-critical section at time {} with state {}'.format(self.uid, self.clock, self.cs_state))
         # now sleep for a random interval
-        interruptable_sleep(randint(0,1))
+        interruptable_sleep(randint(0,5))
 
         if (self.cs_state == States.idle) and not self.lazy:
             self.get_resource(self.critical_section)
@@ -406,7 +434,6 @@ class Carvalho_Roucairol(Ricart_Agrawala):
         Note: critical section is entered from receive_permission or get_resource
         """
         while not self.abort:
-            self.check_publish_queue()
             self.non_critical_section()
 
     def get_resource(self, func):
@@ -476,7 +503,7 @@ class Carvalho_Roucairol(Ricart_Agrawala):
 
     def receive_request(self, uid, nt):
         """
-        Handles receive requests for all critical section states
+        Adds a requestor to requests so that we ask them for permission later
         :param uid: requestor (src)
         :param nt: requestor's clock value
         """
