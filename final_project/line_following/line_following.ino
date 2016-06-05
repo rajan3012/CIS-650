@@ -135,7 +135,7 @@ int sense_edge()
     
  
   
-  delay(1000);
+  delay(500);
   //OnEyes(0,200,0); //green - no edge
   //return 0;
 }
@@ -203,7 +203,7 @@ void loop()
       Serial.print("Left Detected Black, Move Right motor");
       Motors(0,30);
       delay(300);
-      Motors(40,40.5);
+      Motors(30,32.5);
       //PlayChirp(0,0);
       //SendIRMsg(SRC, DST, msg,2);
       //delay(1000);
@@ -214,12 +214,12 @@ void loop()
     Serial.print("Right Detected Black, Move Left motor");
     Motors(30,0);
     delay(300);
-    Motors(40,40.5);  
+    Motors(30,32.5);  
   }
   else if(edge_detected == 3)
   {
     Serial.print("Continue moving - following the line!");
-    Motors(30,30.5);
+    Motors(30,32.5);
     //delay(300);
     //Motors(0,0);
   }
@@ -231,6 +231,6 @@ void loop()
     //Motors(0,0);
   }
   
-  delay(300);
+  //delay(300);
   //moveForward();
 }
