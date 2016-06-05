@@ -21,7 +21,7 @@ void setup()
   //OnEyes(0,0,200); //blue to start
 }
 
-void sense_edge()
+int sense_edge()
 {
   /*
    * the bug detects white around a black. makes it seem like it's following a black line. 
@@ -88,7 +88,7 @@ void sense_edge()
       Serial.print("\n***");
       //PlayChirp(100,100);
       OnEyes(200,0,0);  //red - left sensor detects black
-      //return 1;
+      return 1;
     }  
     else if(rightOn <100 && leftOn >=100) //WHITE detected by LEFT sensor and BLACK detected by RIGHT sensor
     {
@@ -103,7 +103,7 @@ void sense_edge()
       Serial.print("\n***");
       //PlayChirp(100,100);
       OnEyes(0,200,0);  //green - right sensor detects black
-      //return 2;
+      return 2;
     }
     else if(leftOn <100 && rightOn < 100) //Both detected BLACK
     {
@@ -116,7 +116,7 @@ void sense_edge()
       //PlayChirp(100,100);
       OnEyes(0,0,200);  //blue - both detected black
       Serial.print(" BOTH DETECTED BLACK!");
-      //return 4;
+      return 4;
     }
     else if(rightOn >=100 && leftOn >=100) //both detected WHITE
     {
@@ -130,7 +130,7 @@ void sense_edge()
       OnEyes(50,50,50);  //white - both detected white
       
       Serial.print("BOTH SENSORS DETECTED WHITE!");
-      //return 3;
+      return 3;
     }
     
  
@@ -193,14 +193,15 @@ void loop()
   }*/
   
   Serial.print("\n***In loop***\n");
-  sense_edge();
-  //edge_detected = sense_edge();
+  //sense_edge();
+  edge_detected = sense_edge();
   //Serial.print("\nEdge detected?\n");
   //Serial.print(edge_detected);
-  /*
+ 
   if(edge_detected == 1) //left sensor detected back - mover right motor
   {
-      Motors(0,50);
+      Serial.print("Left Detected Black, Move Right motor");
+      Motors(0,30);
       delay(500);
       Motors(0,0);
       //PlayChirp(0,0);
@@ -210,23 +211,26 @@ void loop()
   }
   else if(edge_detected == 2)
   {
-    Motors(50,0);
+    Serial.print("Right Detected Black, Move Left motor");
+    Motors(30,0);
     delay(500);
     Motors(0,0);  
   }
   else if(edge_detected == 3)
   {
-    Motors(50,50);
-    delay(1000);
+    Serial.print("Continue moving - following the line!");
+    Motors(30,30);
+    delay(500);
     Motors(0,0);
   }
-  else if(edge_detected == 3)
+  else if(edge_detected == 4)
   {
+    Serial.print("Stop! Reached the end!");
     Motors(0,0);
-    delay(500);
+    delay(1000);
     //Motors(0,0);
   }
-  */
-  delay(2000);
+  
+  delay(1000);
   //moveForward();
 }
