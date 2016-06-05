@@ -124,7 +124,8 @@ class MQTT:
         # always push onto queue in case we are processing
         # queue from a different thread
         self.pub_pending = True
-        self.outgoing.put( (topic, payload))
+        self.outgoing.put( (topic, payload) )
+        print('{} placed msg {}/{} into outgoing queue'.format(self.uid, topic, payload))
         self.pub_event.set()
 
     def process_outgoing(self):
@@ -146,6 +147,7 @@ class MQTT:
                 self.outgoing.task_done()
             elif self.outgoing.empty():
                 # wait on publish event
+                print("{} publisher is waiting for messasges".format(self.uid))
                 self.pub_event.wait()
                 self.pub_event.clear()
 
