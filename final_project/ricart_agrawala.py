@@ -149,6 +149,7 @@ class MQTT:
                 # wait on publish event
                 print("{} publisher is waiting for messasges".format(self.uid))
                 self.pub_event.wait()
+                print("{} publisher is waking up".format(self.uid))
                 self.pub_event.clear()
 
 
