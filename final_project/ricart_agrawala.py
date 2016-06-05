@@ -194,6 +194,8 @@ class MQTT:
         """
         self.client.loop_stop()
         self.client.disconnect()
+        self.abort = True
+        self.publisher.join()
 
 
 class Ricart_Agrawala(MQTT):
@@ -706,6 +708,7 @@ def main():
 
     except KeyboardInterrupt:
         print "Interrupt received"
+        me.disconnect()
     except RuntimeError:
         print "Runtime Error"
         me.disconnect()
