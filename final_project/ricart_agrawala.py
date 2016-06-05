@@ -695,6 +695,7 @@ def main():
         me.lazy = True
 
     try:
+        me.register()
         # sleep for 10 seconds while everyone gets started
         interruptable_sleep(10)
         me.duties()
