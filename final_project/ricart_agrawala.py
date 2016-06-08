@@ -98,9 +98,9 @@ class MQTT:
         self.client.on_publish = on_publish
         self.client.on_message = on_message
         self.client.message_callback_add(self.will_topic, on_will)
-        for topic, func in self.topics:
-            print('setting callback for {} to {}'.format(topic,repr(on_topic)))
-            self.client.message_callback_add(topic, func)
+        for topic in self.topics:
+            print('setting callback for {} to {}'.format(topic, repr(on_topic)))
+            self.client.message_callback_add(topic, on_topic)
 
         # connect to broker
         self.client.connect(self.broker, self.port, keepalive=self.keepalive)
@@ -114,7 +114,7 @@ class MQTT:
 
         # subscribe to topics
         self.client.subscribe([(self.will_topic, self.qos)])
-        for topic, _ in self.topics:
+        for topic in self.topics:
             print('subscribing to {}'.format(topic))
             self.client.subscribe([(topic, self.qos)])
 
