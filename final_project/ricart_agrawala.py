@@ -145,7 +145,7 @@ class MQTT:
                 except Empty:
                     continue # nothing to do
                 self.pub_pending = True
-                print("Publishing message {}, on topic {}".format(topic, payload))
+                print("Publishing message {2:}, on topic {1:}".format(topic, payload))
                 self.client.publish(topic, payload, self.qos)
                 self.outgoing.task_done()
             elif self.outgoing.empty():
