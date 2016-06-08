@@ -53,8 +53,11 @@ class MQTT:
         self.uid = my_uid
 
         self.client = None
-        self.broker = "white0"
-        self.port = 1883
+        #self.broker = "white0"
+        #self.port = 1883
+        self.broker = "brix.d.cs.uoregon.edu"
+        self.port = 8100
+
 
         # topics
         self.topics = []
