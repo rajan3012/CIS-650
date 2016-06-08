@@ -12,12 +12,11 @@ usage: ricart_agrawala.py <int: uid> <int: neighbor1> ... [<int: neighbor2>] [-O
 > For python mosquitto client $ sudo pip install paho-mqtt
 > Command line arg to check status of broker $ /etc/init.d/mosquitto status 
 """
-import sys
 import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 from random import randint
 from threading import Thread, Event
-#import grovepi
+from utility import *
 
 class Role:
     supervisor  = 0
@@ -628,21 +627,6 @@ def parse_payload(payload):
 def construct_payload(src_uid, dst_uid, msg_type, payload):
     return ':'.join([str(src_uid), str(dst_uid), msg_type, str(payload)])
 
-def interruptable_sleep(sleepy):
-    """
-    Using threading.Event to create an interruptable sleep routine
-    Note: threading.wait() returns timeout period only the Python
-    version 3.1 or higher.
-    :param sleepy: seconds to sleep
-    """
-    nap = Event()
-    if sys.version_info > (3, 0):
-        while sleepy > 0:
-            sleepy -= nap.wait(sleepy)
-            print('sleepiness {}'.format(sleepy))
-    else:
-        nap.wait(sleepy)
-
 def lambort_lt(uid1, clock1, uid2, clock2):
     """
     Compares two Lambort logical clocks using uid as the tie breaker to provide total ordering
@@ -661,61 +645,3 @@ def lambort_lt(uid1, clock1, uid2, clock2):
     return result
 
 
-'''
----------------------------------------------------------------------
-    MAIN
----------------------------------------------------------------------
-'''
-
-
-def main():
-    """
-    Main method takes command line arguments initialize and call duties
-    :return:
-    """
-    optimization = False
-    lazy = False
-
-    if len(sys.argv) < 3:
-        print 'ERROR\nusage: ricart_agrawala.py <int: i> <int: neighbor1> ... [<int: neighborN>] [-O]'
-        sys.exit()
-
-    try:
-        my_uid = int(sys.argv[1])
-        neighbors = []
-        for arg in sys.argv[2:]:
-            if arg == '-O':
-                optimization = True
-            elif arg == '-L':
-                lazy = True
-            else:
-                neighbors.append(int(arg))
-    except ValueError:
-        print 'ERROR\nusage: ricart_agrawala.py <int: i> <int: neighbor1> ... <int: neighborN> [-O]'
-        sys.exit()
-
-    if optimization:
-        me = Carvalho_Roucairol(my_uid, Role.peer, *neighbors)
-    else:
-        me = Ricart_Agrawala(my_uid, Role.peer, *neighbors)
-
-    if lazy:
-        me.lazy = True
-
-    try:
-        me.register()
-        # sleep for 10 seconds while everyone gets started
-        interruptable_sleep(10)
-        me.duties()
-        me.client.disconnect()
-        sys.exit()
-
-    except KeyboardInterrupt:
-        print "Interrupt received"
-        me.disconnect()
-    except RuntimeError:
-        print "Runtime Error"
-        me.disconnect()
-
-if __name__ == "__main__":
-    main()
