@@ -99,6 +99,7 @@ class MQTT:
         self.client.on_message = on_message
         self.client.message_callback_add(self.will_topic, on_will)
         for topic in self.topics:
+            print('setting callback for {} to {}'.format(topic,repr(on_topic)))
             self.client.message_callback_add(topic, on_topic)
 
         # connect to broker
