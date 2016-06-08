@@ -44,9 +44,9 @@ class Task:
 
 class Worker(Ricart_Agrawala):
 
-    def __init__(self, uid, role, *neighbors):
+    def __init__(self, uid,  *neighbors):
 
-        Ricart_Agrawala.__init__(self, uid, role, *neighbors)
+        Ricart_Agrawala.__init__(self, uid, Role.worker, *neighbors)
         self.request_sent = False
         self.work_topic = 'hauler/'
         self.my_task = None
