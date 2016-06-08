@@ -48,7 +48,7 @@ class Worker(Ricart_Agrawala):
 
         Ricart_Agrawala.__init__(self, uid, Role.worker, *neighbors)
         self.request_sent = False
-        self.work_topic = 'hauler/'
+        self.work_topic = 'hauler'
         self.my_task = None
         self.topics.append( (self.work_topic, on_work) )
 
@@ -133,7 +133,7 @@ class Supervisor(Ricart_Agrawala):
 
     def __init__(self, uid, *neighbors):
         Ricart_Agrawala.__init__(self, uid, Role.supervisor, neighbors)
-        self.work_topic = 'hauler/'
+        self.work_topic = 'hauler'
         self.bag = Queue()
         self.pending = {}
         self.results = {}
