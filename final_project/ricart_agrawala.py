@@ -628,7 +628,7 @@ def parse_payload(payload):
 
     return src_uid, dst_uid, msg_type, payload
 
-def construct_payload(src_uid, dst_uid, msg_type, payload):
+def construct_payload(src_uid, dst_uid, msg_type, payload='None'):
     return ':'.join([str(src_uid), str(dst_uid), msg_type, str(payload)])
 
 def lambort_lt(uid1, clock1, uid2, clock2):

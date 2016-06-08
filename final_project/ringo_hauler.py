@@ -79,7 +79,7 @@ class Worker(Ricart_Agrawala):
         self.publish(self.work_topic, msg)
 
     def request_task(self):
-        msg = ':'.join([str(self.uid), '0', Msg.request])
+        msg = construct_payload(self.uid, '0', Msg.request)
         self.publish(self.work_topic, msg)
         self.request_sent = True
 
