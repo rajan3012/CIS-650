@@ -237,7 +237,7 @@ class Ricart_Agrawala(MQTT):
         self.set_will(self.uid, self.role)
 
         # register topics for receiving
-        self.topics.append(self.i_topic, on_topic)
+        self.topics.append( (self.i_topic, on_topic) )
 
         self.func_critical = None
 
