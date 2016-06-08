@@ -98,9 +98,9 @@ class MQTT:
         self.client.on_publish = on_publish
         self.client.on_message = on_message
         self.client.message_callback_add(self.will_topic, on_will)
-        for topic in self.topics:
+        for topic, func in self.topics:
             print('setting callback for {} to {}'.format(topic,repr(on_topic)))
-            self.client.message_callback_add(topic, on_topic)
+            self.client.message_callback_add(topic, func)
 
         # connect to broker
         self.client.connect(self.broker, self.port, keepalive=self.keepalive)
@@ -114,7 +114,7 @@ class MQTT:
 
         # subscribe to topics
         self.client.subscribe([(self.will_topic, self.qos)])
-        for topic in self.topics:
+        for topic, _ in self.topics:
             print('subscribing to {}'.format(topic))
             self.client.subscribe([(topic, self.qos)])
 
@@ -237,7 +237,7 @@ class Ricart_Agrawala(MQTT):
         self.set_will(self.uid, self.role)
 
         # register topics for receiving
-        self.topics.append(self.i_topic)
+        self.topics.append(self.i_topic, on_topic)
 
         self.func_critical = None
 
@@ -603,8 +603,7 @@ def on_topic(client, userdata, msg):
     :param msg:
     """
     print("Received message [{}]: {} on topic {}".format(msg.mid, msg.payload, msg.topic))
-    if msg.topic in userdata.topics:
-        userdata.process_incoming(msg.payload)
+    userdata.process_incoming(msg.payload)
 
 
 '''

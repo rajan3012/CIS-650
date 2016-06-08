@@ -50,7 +50,7 @@ class Worker(Ricart_Agrawala):
         self.request_sent = False
         self.work_topic = 'hauler/'
         self.my_task = None
-        self.topics.append(self.work_topic)
+        self.topics.append( (self.work_topic, on_work) )
 
     def process_incoming(self, payload):
         src_uid, dst_uid, msg_type, payload = parse_payload(payload)
@@ -140,7 +140,7 @@ class Supervisor(Ricart_Agrawala):
         self.done = False
         self.output_done = False
 
-        self.topics.append(self.work_topic)
+        self.topics.append( (self.work_topic, on_work) )
 
         # fill the bag
         self.make_work()
@@ -210,6 +210,16 @@ class Supervisor(Ricart_Agrawala):
 
         while not self.abort:
             interruptable_sleep(10)
+
+
+'''
+---------------------------------------------------------------------
+    MQTT callbacks
+---------------------------------------------------------------------
+'''
+def on_work(client, userdata, msg):
+    print("Received message [{}]: {} on topic {}".format(msg.mid, msg.payload, msg.topic))
+    userdata.process_incoming(msg.payload)
 
 
 '''
