@@ -52,8 +52,8 @@ class Worker(Ricart_Agrawala):
         self.my_task = None
         self.topics.append(self.work_topic)
 
-    def process_incoming(self, payload):
-        src_uid, dst_uid, msg_type, payload = parse_payload(payload)
+    def process_incoming(self, msg):
+        src_uid, dst_uid, msg_type, payload = parse_payload(msg)
 
         if dst_uid != self.uid:
             return
@@ -65,7 +65,7 @@ class Worker(Ricart_Agrawala):
         elif msg_type == Msg.stop:
             pass
         else:
-            Ricart_Agrawala.process_incoming(self, payload)
+            Ricart_Agrawala.process_incoming(self, msg)
 
     def process_task(self, payload):
         self.my_task = Task.from_payload(payload)
@@ -191,8 +191,8 @@ class Supervisor(Ricart_Agrawala):
             if (self.bag.qsize() == 0) and (len(self.pending) == 0):
                 self.done = True
 
-    def process_incoming(self, payload):
-        src_uid, dst_uid, msg_type, payload = parse_payload(payload)
+    def process_incoming(self, msg):
+        src_uid, dst_uid, msg_type, payload = parse_payload(msg)
         if dst_uid != self.uid:
             return
         if msg_type == Msg.request:
@@ -200,7 +200,7 @@ class Supervisor(Ricart_Agrawala):
         elif msg_type == Msg.result:
             self.process_result(Task.from_payload(payload), src_uid)
         else:
-            Ricart_Agrawala.process_incoming(self, payload)
+            Ricart_Agrawala.process_incoming(self, msg)
 
     def duties(self):
         """
