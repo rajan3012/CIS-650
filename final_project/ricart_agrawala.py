@@ -114,6 +114,7 @@ class MQTT:
         # subscribe to topics
         self.client.subscribe([(self.will_topic, self.qos)])
         for topic in self.topics:
+            print('subscribing to {}'.foramt(topic))
             self.client.subscribe([(topic, self.qos)])
 
         # run network loop from a separate thread
