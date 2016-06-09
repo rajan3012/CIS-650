@@ -132,7 +132,7 @@ class Worker(Ricart_Agrawala):
                 self.start_critical()
                 self.haul_load()
 
-            interruptable_sleep(10)
+            interruptable_sleep(2)
 
 class Supervisor(Ricart_Agrawala):
 
