@@ -618,15 +618,14 @@ def parse_msg(msg):
     return topic, src_uid, dst_uid, msg_type
 
 
-def parse_payload(payload):
-    src_uid, dst_uid, msg_type, payload = payload.split(':', 3)
+def parse_payload(msg):
+    """
+    parse MQTT.msg.payload, there is an unfortuante double usage of payload
+    """
+    src_uid, dst_uid, msg_type, payload = msg.split(':', 3)
     try:
         src_uid = int(src_uid)
         dst_uid = int(dst_uid)
-        if payload == 'None':
-            payload = -1
-        else:
-            payload = int(payload)
     except ValueError:
         return None
 
