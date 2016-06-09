@@ -617,6 +617,7 @@ def parse_msg(msg):
     src_uid, dst_uid, msg_type, payload = parse_payload(msg.payload)
     return topic, src_uid, dst_uid, msg_type
 
+
 def parse_payload(payload):
     src_uid, dst_uid, msg_type, payload = payload.split(':', 4)
     try:
