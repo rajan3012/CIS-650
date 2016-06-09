@@ -41,8 +41,8 @@ STOPPED_CODE = bytearray([0x00,0xff,0x68,0x97])
 
 
 def receive_ringo(byte_code):
-    return True
-    #return ir_receive() == byte_code
+
+    return ir_receive() == byte_code
 
 def is_button_on(want=True):
     """

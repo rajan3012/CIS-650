@@ -109,7 +109,7 @@ class Worker(Ricart_Agrawala):
         interruptable_sleep(10)
         signal_ringo(self.ringo_go)
 
-        while not receive_ringo(ringo_done):
+        while not receive_ringo(self.ringo_done):
             interruptable_sleep(2)
 
         self.my_task.result = randint(0, self.my_task.units)
