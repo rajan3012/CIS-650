@@ -10,7 +10,7 @@ from pi_stuff import *
 class Task:
     def __init__(self, uid, units = 0, worker_uid = None, result = None):
         self.uid = uid
-        self.units = 0
+        self.units = units
         self.worker_uid = []
         if worker_uid is not None:
             self.worker_uid.append(worker_uid)
@@ -76,7 +76,7 @@ class Worker(Ricart_Agrawala):
         self.publish(self.work_topic, msg)
 
     def request_task(self):
-        msg = construct_payload(self.uid, '0', Msg.request)
+        msg = construct_payload(self.uid, '0', Msg.task_request)
         self.publish(self.work_topic, msg)
         self.request_sent = True
 

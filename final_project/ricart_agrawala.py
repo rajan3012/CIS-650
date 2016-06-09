@@ -30,6 +30,7 @@ class Msg:
     stop    = '3'
     dead    = '4'
     permission = '5'
+    task_request = '6'
 
 class Fake_Message:
     def __init__(self, topic, payload):
