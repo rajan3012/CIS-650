@@ -60,10 +60,12 @@ def is_switch_on():
 
 def signal_ringo(remote_code):
     # SEND_START, SEND_STOP, SEND_ONCE)
-    on_led()
-    print("Signaling ringo")
-    Popen(("irsend", "SEND_ONCE", "Ringo", remote_code))
-    off_led()
+    print("Signaling ringo .")
+    for i in range(5):
+        on_led()
+        Popen(("irsend", "SEND_ONCE", "Ringo", remote_code))
+        interruptable_sleep(1)
+        off_led()
 
 def processLine(line):
     reading = line.split()
