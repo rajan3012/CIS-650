@@ -213,7 +213,7 @@ class Ricart_Agrawala(MQTT):
     ricart_agrawala_v9.lts
     """
 
-    def __init__(self, uid, role, *neighbors):
+    def __init__(self, uid, role, neighbors):
         MQTT.__init__(self, uid)
         self.role = role
         self.neighbors = []
@@ -229,6 +229,7 @@ class Ricart_Agrawala(MQTT):
         self.lazy = False
 
         for neigh in neighbors:
+            print('adding neighbor {}'.neigh)
             self.neighbors.append(neigh)
             self.neigh_topics[neigh] = self.topic_prefix + str(neigh)
 
@@ -409,7 +410,7 @@ class Carvalho_Roucairol(Ricart_Agrawala):
     adds the Carvalho Roucairol optimizations to Ricart Agrawala. Implemented in the design of
     ricart_agrawala_psuedo_code.pdf.
     """
-    def __init__(self,uid, role, *neighbors):
+    def __init__(self,uid, role, neighbors):
         """
         Adds reqeusts set, to track which neighbors have actually requested the resource. Basis of
         optimization is to not request permission from a peer that is not using the resource.
@@ -417,7 +418,7 @@ class Carvalho_Roucairol(Ricart_Agrawala):
         :param neighbors:
         """
 
-        Ricart_Agrawala.__init__(self, uid, role,  *neighbors)
+        Ricart_Agrawala.__init__(self, uid, role,  neighbors)
 
         # added data structure to track neighbors who have requested the critical resource
         self.requests = set()

@@ -41,9 +41,9 @@ class Task:
 
 class Worker(Ricart_Agrawala):
 
-    def __init__(self, uid,  *neighbors):
+    def __init__(self, uid,  neighbors):
 
-        Ricart_Agrawala.__init__(self, uid, Role.worker, *neighbors)
+        Ricart_Agrawala.__init__(self, uid, Role.worker, neighbors)
         self.request_sent = False
         self.work_topic = 'hauler'
         self.my_task = None
@@ -128,7 +128,7 @@ class Worker(Ricart_Agrawala):
 
 class Supervisor(Ricart_Agrawala):
 
-    def __init__(self, uid, *neighbors):
+    def __init__(self, uid, neighbors):
         Ricart_Agrawala.__init__(self, uid, Role.supervisor, neighbors)
         self.work_topic = 'hauler'
         self.bag = Queue()
@@ -239,9 +239,9 @@ def main():
         sys.exit()
 
     if my_uid == 0:
-        me = Supervisor(my_uid, *neighbors)
+        me = Supervisor(my_uid, neighbors)
     else:
-        me = Worker(my_uid, *neighbors)
+        me = Worker(my_uid, neighbors)
 
     try:
         me.register()
