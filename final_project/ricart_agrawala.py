@@ -396,6 +396,7 @@ class Ricart_Agrawala(MQTT):
         :param payload:
         """
         src_uid, dst_uid, msg_type, nt = parse_payload(payload)
+        nt = int(nt)
         if dst_uid == self.uid:
             print('received msg_type {} from {} at time(nt/local) {}/{} with state {}'.format(msg_type, src_uid, nt, self.clock, self.cs_state))
             if msg_type == Msg.request:
