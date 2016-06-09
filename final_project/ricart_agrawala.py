@@ -229,7 +229,7 @@ class Ricart_Agrawala(MQTT):
         self.lazy = False
 
         for neigh in neighbors:
-            print('adding neighbor {}'.neigh)
+            print('adding neighbor {}'.format(neigh))
             self.neighbors.append(neigh)
             self.neigh_topics[neigh] = self.topic_prefix + str(neigh)
 
