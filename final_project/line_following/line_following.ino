@@ -213,27 +213,27 @@ void loop()
     if(edge_detected == 1) //left sensor detected back - mover right motor
     {
         Serial.println("Left Detected Black, Move Right motor");
-        //Motors(0,30);
+        Motors(0,30);
         delay(300);
   
     }
     else if(edge_detected == 2)
     {
       Serial.println("Right Detected Black, Move Left motor");
-      //Motors(30,0);
+      Motors(30,0);
       delay(300);
     }
     else if(edge_detected == 3)
     {
       Serial.println("Continue moving - following the line!");
-      //Motors(30,32.5);
+      Motors(30,32.5);
       
     }
     else if(edge_detected == 4)
     {
       Serial.println("Stop! Both detected black!");
       delay(400);//so that it moves a bit ahead of the black line
-      //Motors(0,0);
+      Motors(0,0);
       detect_flag = false;
       done = false; // just to make sure it was set correctly 
       /*
