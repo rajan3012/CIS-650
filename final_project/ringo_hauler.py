@@ -192,7 +192,7 @@ class Supervisor(Ricart_Agrawala):
         src_uid, dst_uid, msg_type, payload = parse_payload(msg)
         if dst_uid != self.uid:
             return
-        if msg_type == Msg.request:
+        if msg_type == Msg.task_request:
             self.process_request(src_uid)
         elif msg_type == Msg.result:
             self.process_result(Task.from_payload(payload), src_uid)
