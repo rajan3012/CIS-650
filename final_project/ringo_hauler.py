@@ -36,10 +36,7 @@ class Task:
         return cls(uid, units, worker_uid, result)
 
     def __str__(self):
-        s = Msg.task
-        if self.result is not None:
-            s = Msg.result
-        return ':'.join([s, str(self.uid), str(self.units), str(self.worker_uid), str(self.result)])
+        return ':'.join([str(self.uid), str(self.units), str(self.worker_uid), str(self.result)])
 
 
 class Worker(Ricart_Agrawala):
@@ -75,7 +72,7 @@ class Worker(Ricart_Agrawala):
 
     def send_result(self, task):
         payload = str(task)
-        msg = ':'.join([str(self.uid), '0', payload])
+        msg = construct_payload(self.uid, '0', Msg.result, payload)
         self.publish(self.work_topic, msg)
 
     def request_task(self):
@@ -171,15 +168,15 @@ class Supervisor(Ricart_Agrawala):
         if send_task is not None:
             send_task.worker_uid.append(uid)
             self.pending[send_task.uid] = send_task
-            new_msg = ':'.join(['0',str(uid),str(send_task)])
+            new_msg = construct_payload(self.uid, uid, Msg.task, str(send_task))
         elif len(self.pending) > 0:
             # send out a pending task assigned to fewest workers
             send_task = min(self.pending.values(), key=lambda v: len(v.worker_uid))
             send_task.worker_uid.append(uid)
-            new_msg = ':'.join(['0',str(uid),str(send_task)])
+            new_msg = construct_payload(self.uid, uid, Msg.task, str(send_task))
         else:
             # send out a stop message
-            new_msg = ':'.join(['0',str(uid),Msg.stop])
+            new_msg = construct_payload(self.uid, uid, Msg.stop)
         self.publish(self.work_topic, new_msg)
 
     def process_result(self, result, uid):
