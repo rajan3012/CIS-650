@@ -12,11 +12,11 @@ usage: ricart_agrawala.py <int: uid> <int: neighbor1> ... [<int: neighbor2>] [-O
 > For python mosquitto client $ sudo pip install paho-mqtt
 > Command line arg to check status of broker $ /etc/init.d/mosquitto status 
 """
-import sys
 import paho.mqtt.client as mqtt
 from Queue import Queue, Empty
 from random import randint
-from threading import Event
+from threading import Thread, Event
+from utility import *
 
 class Role:
     supervisor  = 0
@@ -30,6 +30,7 @@ class Msg:
     stop    = '3'
     dead    = '4'
     permission = '5'
+    task_request = '6'
 
 class Fake_Message:
     def __init__(self, topic, payload):
@@ -53,8 +54,11 @@ class MQTT:
         self.uid = my_uid
 
         self.client = None
-        self.broker = "white0"
-        self.port = 1883
+        #self.broker = "white0"
+        #self.port = 1883
+        self.broker = "brix.d.cs.uoregon.edu"
+        self.port = 8100
+
 
         # topics
         self.topics = []
@@ -72,6 +76,10 @@ class MQTT:
         # queue of outgoing messages
         self.outgoing = Queue()
         self.pub_pending = False # waiting for a publish confirmation
+
+        # publisher, concurrent thread processing outgoing messages
+        self.publisher = Thread(target=self.process_outgoing)
+        self.pub_event = Event()
 
     def register(self):
         """
@@ -92,6 +100,7 @@ class MQTT:
         self.client.on_message = on_message
         self.client.message_callback_add(self.will_topic, on_will)
         for topic in self.topics:
+            print('setting callback for {} to {}'.format(topic, repr(on_topic)))
             self.client.message_callback_add(topic, on_topic)
 
         # connect to broker
@@ -107,20 +116,51 @@ class MQTT:
         # subscribe to topics
         self.client.subscribe([(self.will_topic, self.qos)])
         for topic in self.topics:
+            print('subscribing to {}'.format(topic))
             self.client.subscribe([(topic, self.qos)])
 
         # run network loop from a separate thread
         self.client.loop_start()
 
+        # start publish thread
+        self.publisher.start()
+
     def publish(self, topic,  payload):
-        if self.pub_pending or not self.outgoing.empty():
-            self.outgoing.put( (topic, payload) )  # this is a blocking put
-        else: # if the queue is empty and nothing pending just go ahead and publish
-            self.pub_pending = True
-            print("Publishing message {}, on topic {}".format(topic, payload))
-            self.client.publish(topic, payload, self.qos)
+        # always push onto queue in case we are processing
+        # queue from a different thread
+        self.outgoing.put( (topic, payload) )
+        print('{} placed msg {}/{} into outgoing queue'.format(self.uid, topic, payload))
+        self.pub_event.set()
+
+    def process_outgoing(self):
+        """
+        Run in a thread to process outgoing queue as messasges are added.
+        Spin waits on pub_pending to process all messages in the queue. Once
+        queue is empty waits on pub_event
+        """
+
+        while not self.abort:
+            if not self.pub_pending and not self.outgoing.empty():
+                try:
+                    topic, payload = self.outgoing.get_nowait()
+                except Empty:
+                    continue # nothing to do
+                self.pub_pending = True
+                print("Publishing message {1:}, on topic {0:}".format(topic, payload))
+                self.client.publish(topic, payload, self.qos)
+                self.outgoing.task_done()
+            elif self.outgoing.empty():
+                # wait on publish event
+                print("{} publisher is waiting for messasges".format(self.uid))
+                self.pub_event.wait()
+                print("{} publisher is waking up".format(self.uid))
+                self.pub_event.clear()
+
 
     def check_publish_queue(self):
+        """
+        non-threaded version
+        """
         if not self.pub_pending and not self.outgoing.empty():
             try:
                 topic, payload = self.outgoing.get_nowait()
@@ -129,6 +169,7 @@ class MQTT:
             self.pub_pending = True
             print("Publishing message {}, on topic {}".format(topic, payload))
             self.client.publish(topic, payload, self.qos)
+            self.outgoing.task_done()
 
     def process_incoming(self, payload):
         """
@@ -161,6 +202,9 @@ class MQTT:
         """
         self.client.loop_stop()
         self.client.disconnect()
+        self.abort = True
+        self.pub_event.set()
+        self.publisher.join()
 
 
 class Ricart_Agrawala(MQTT):
@@ -169,7 +213,7 @@ class Ricart_Agrawala(MQTT):
     ricart_agrawala_v9.lts
     """
 
-    def __init__(self, uid, role, *neighbors):
+    def __init__(self, uid, role, neighbors):
         MQTT.__init__(self, uid)
         self.role = role
         self.neighbors = []
@@ -185,6 +229,7 @@ class Ricart_Agrawala(MQTT):
         self.lazy = False
 
         for neigh in neighbors:
+            print('adding neighbor {}'.format(neigh))
             self.neighbors.append(neigh)
             self.neigh_topics[neigh] = self.topic_prefix + str(neigh)
 
@@ -198,7 +243,6 @@ class Ricart_Agrawala(MQTT):
 
         self.func_critical = None
 
-        self.register()
 
     def reap(self, uid, role):
         """
@@ -231,9 +275,7 @@ class Ricart_Agrawala(MQTT):
             if self.count == self.need:
                 self.start_critical()
 
-            # otherwise do other stuff
-            self.check_publish_queue()
-            #self.client.loop()
+           #self.client.loop()
             self.non_critical_section()
 
     def start_critical(self):
@@ -345,7 +387,7 @@ class Ricart_Agrawala(MQTT):
         """
         print('{} is in a non-critical section at time {} with state {}'.format(self.uid, self.clock, self.cs_state))
         # now sleep for a random interval
-        interruptable_sleep(randint(0,1))
+        interruptable_sleep(randint(0,5))
 
         if (self.cs_state == States.idle) and not self.lazy:
             self.get_resource(self.critical_section)
@@ -355,6 +397,7 @@ class Ricart_Agrawala(MQTT):
         :param payload:
         """
         src_uid, dst_uid, msg_type, nt = parse_payload(payload)
+        nt = int(nt)
         if dst_uid == self.uid:
             print('received msg_type {} from {} at time(nt/local) {}/{} with state {}'.format(msg_type, src_uid, nt, self.clock, self.cs_state))
             if msg_type == Msg.request:
@@ -367,7 +410,7 @@ class Carvalho_Roucairol(Ricart_Agrawala):
     adds the Carvalho Roucairol optimizations to Ricart Agrawala. Implemented in the design of
     ricart_agrawala_psuedo_code.pdf.
     """
-    def __init__(self,uid, role, *neighbors):
+    def __init__(self,uid, role, neighbors):
         """
         Adds reqeusts set, to track which neighbors have actually requested the resource. Basis of
         optimization is to not request permission from a peer that is not using the resource.
@@ -375,7 +418,7 @@ class Carvalho_Roucairol(Ricart_Agrawala):
         :param neighbors:
         """
 
-        Ricart_Agrawala.__init__(self, uid, role,  *neighbors)
+        Ricart_Agrawala.__init__(self, uid, role,  neighbors)
 
         # added data structure to track neighbors who have requested the critical resource
         self.requests = set()
@@ -406,7 +449,6 @@ class Carvalho_Roucairol(Ricart_Agrawala):
         Note: critical section is entered from receive_permission or get_resource
         """
         while not self.abort:
-            self.check_publish_queue()
             self.non_critical_section()
 
     def get_resource(self, func):
@@ -476,7 +518,7 @@ class Carvalho_Roucairol(Ricart_Agrawala):
 
     def receive_request(self, uid, nt):
         """
-        Handles receive requests for all critical section states
+        Adds a requestor to requests so that we ask them for permission later
         :param uid: requestor (src)
         :param nt: requestor's clock value
         """
@@ -564,8 +606,7 @@ def on_topic(client, userdata, msg):
     :param msg:
     """
     print("Received message [{}]: {} on topic {}".format(msg.mid, msg.payload, msg.topic))
-    if msg.topic in userdata.topics:
-        userdata.process_incoming(msg.payload)
+    userdata.process_incoming(msg.payload)
 
 
 '''
@@ -579,34 +620,22 @@ def parse_msg(msg):
     src_uid, dst_uid, msg_type, payload = parse_payload(msg.payload)
     return topic, src_uid, dst_uid, msg_type
 
-def parse_payload(payload):
-    src_uid, dst_uid, msg_type, payload = payload.split(':')
+
+def parse_payload(msg):
+    """
+    parse MQTT.msg.payload, there is an unfortuante double usage of payload
+    """
+    src_uid, dst_uid, msg_type, payload = msg.split(':', 3)
     try:
         src_uid = int(src_uid)
         dst_uid = int(dst_uid)
-        payload = int(payload)
     except ValueError:
         return None
 
     return src_uid, dst_uid, msg_type, payload
 
-def construct_payload(src_uid, dst_uid, msg_type, payload):
+def construct_payload(src_uid, dst_uid, msg_type, payload='None'):
     return ':'.join([str(src_uid), str(dst_uid), msg_type, str(payload)])
-
-def interruptable_sleep(sleepy):
-    """
-    Using threading.Event to create an interruptable sleep routine
-    Note: threading.wait() returns timeout period only the Python
-    version 3.1 or higher.
-    :param sleepy: seconds to sleep
-    """
-    nap = Event()
-    if sys.version_info > (3, 0):
-        while sleepy > 0:
-            sleepy -= nap.wait(sleepy)
-            print('sleepiness {}'.format(sleepy))
-    else:
-        nap.wait(sleepy)
 
 def lambort_lt(uid1, clock1, uid2, clock2):
     """
@@ -626,59 +655,3 @@ def lambort_lt(uid1, clock1, uid2, clock2):
     return result
 
 
-'''
----------------------------------------------------------------------
-    MAIN
----------------------------------------------------------------------
-'''
-
-
-def main():
-    """
-    Main method takes command line arguments initialize and call duties
-    :return:
-    """
-    optimization = False
-    lazy = False
-
-    if len(sys.argv) < 3:
-        print 'ERROR\nusage: ricart_agrawala.py <int: i> <int: neighbor1> ... [<int: neighborN>] [-O]'
-        sys.exit()
-
-    try:
-        my_uid = int(sys.argv[1])
-        neighbors = []
-        for arg in sys.argv[2:]:
-            if arg == '-O':
-                optimization = True
-            elif arg == '-L':
-                lazy = True
-            else:
-                neighbors.append(int(arg))
-    except ValueError:
-        print 'ERROR\nusage: ricart_agrawala.py <int: i> <int: neighbor1> ... <int: neighborN> [-O]'
-        sys.exit()
-
-    if optimization:
-        me = Carvalho_Roucairol(my_uid, Role.peer, *neighbors)
-    else:
-        me = Ricart_Agrawala(my_uid, Role.peer, *neighbors)
-
-    if lazy:
-        me.lazy = True
-
-    try:
-        # sleep for 10 seconds while everyone gets started
-        interruptable_sleep(10)
-        me.duties()
-        me.client.disconnect()
-        sys.exit()
-
-    except KeyboardInterrupt:
-        print "Interrupt received"
-    except RuntimeError:
-        print "Runtime Error"
-        me.disconnect()
-
-if __name__ == "__main__":
-    main()
