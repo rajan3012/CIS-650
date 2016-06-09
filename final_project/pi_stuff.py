@@ -169,24 +169,5 @@ def blink_led(seconds):
     interruptable_sleep(seconds)
     off_led()
 
-def main():
-
-    distance = 0
-    move_by = 3
-
-    signal_ringo(GO_CODE)
-
-    try:
-        while distance < 18:
-            codes = ir_receive()
-            distance += process_code(codes, move_by)
-    except KeyboardInterrupt:
-        sys.exit()
-
-    print("Moved 18 inches, time to rest")
-    sys.exit()
-
-if __name__ == "__main__":
-    main()
 
 
