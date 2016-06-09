@@ -9,10 +9,18 @@ from binascii import hexlify
 import grovepi as gp
 from utility import *
 
-RINGO_GO = "KEY_2"
-RINGO_DONE = bytearray([0x00,0xff,0x68,0x97]) # key_?
-RINGO_ACK = "KEY_4"
 PI_LED = 4
+PI_HIGH = 1
+PI_LOW = 0
+PI_GO = 0
+PI_DONE = 1
+PI_ACK = 2
+
+RINGO_CODES = [ None,
+                ["KEY_9", bytearray([0x00,0xff,0x68,0x97]), "KEY_7"],
+                ["KEY_4", bytearray([0x00,0xff,0x30,0xcf]), "KEY_5"],
+                ["KEY_6", bytearray([0x00,0xff,0x18,0xe7]), "KEY_8"]
+              ]
 
 # PREAMBLE
 beginSend_firstNum = 9000
@@ -41,16 +49,14 @@ def is_button_on(want=True):
     Reads button state when installed in position 3
     :return:  True when button is pressed
     """
-    #return gp.digitalRead(3) == gp.HIGH
-    print('button is {}'.format(gp.digitalRead(3)))
-    return want
+    return gp.digitalRead(3) == PI_HIGH
 
 def is_switch_on():
     """
     Reads switch state when installed in position 4
     :return:  True when switch is in the ON position
     """
-    return gp.digitalRead(4) == gp.HIGH
+    return gp.digitalRead(4) == PI_HIGH
 
 def signal_ringo(remote_code):
     # SEND_START, SEND_STOP, SEND_ONCE)

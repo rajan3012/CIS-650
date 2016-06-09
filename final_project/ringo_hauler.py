@@ -49,6 +49,10 @@ class Worker(Ricart_Agrawala):
         self.my_task = None
         self.topics.append(self.work_topic)
 
+        self.ringo_go = RINGO_CODES[self.uid][PI_GO]
+        self.ringo_done = RINGO_CODES[self.uid][PI_DONE]
+        self.ringo_ack = RINGO_CODES[self.uid][PI_ACK]
+
     def process_incoming(self, msg):
         src_uid, dst_uid, msg_type, payload = parse_payload(msg)
 
@@ -95,10 +99,17 @@ class Worker(Ricart_Agrawala):
         """
         non-critical section of ringo hauling
         """
-        signal_ringo(RINGO_GO)
+        signal_ringo(self.ringo_go)
         print('{} is loaded and hauling'.format(self.uid))
 
-        while not receive_ringo(RINGO_DONE):
+        while not receive_ringo(self.ringo_done):
+            interruptable_sleep(2)
+
+        print('{} is unloading at destination'.format(self.uid))
+        interruptable_sleep(10)
+        signal_ringo(self.ringo_go)
+
+        while not receive_ringo(ringo_done):
             interruptable_sleep(2)
 
         self.my_task.result = randint(0, self.my_task.units)
