@@ -622,7 +622,10 @@ def parse_payload(payload):
     try:
         src_uid = int(src_uid)
         dst_uid = int(dst_uid)
-        payload = int(payload)
+        if payload == 'None':
+            payload = -1
+        else:
+            payload = int(payload)
     except ValueError:
         return None
 
