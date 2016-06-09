@@ -42,7 +42,7 @@ def is_button_on(want=True):
     :return:  True when button is pressed
     """
     #return gp.digitalRead(3) == gp.HIGH
-    print('button is {}'.gp.digitalRead(3))
+    print('button is {}'.format(gp.digitalRead(3)))
     return want
 
 def is_switch_on():
