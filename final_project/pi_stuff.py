@@ -36,12 +36,14 @@ def receive_ringo(byte_code):
     return True
     #return ir_receive() == byte_code
 
-def is_button_on():
+def is_button_on(want=True):
     """
     Reads button state when installed in position 3
     :return:  True when button is pressed
     """
-    return gp.digitalRead(3) == gp.HIGH
+    #return gp.digitalRead(3) == gp.HIGH
+    print('button is {}'.gp.digitalRead(3))
+    return want
 
 def is_switch_on():
     """

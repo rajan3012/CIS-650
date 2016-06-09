@@ -83,7 +83,7 @@ class Worker(Ricart_Agrawala):
         """
         print('{} has permission to operate crane, hold button while in use')
 
-        while not is_button_on():
+        while not is_button_on(False):
             pass
         print('{} is operating crane')
         while is_button_on():
