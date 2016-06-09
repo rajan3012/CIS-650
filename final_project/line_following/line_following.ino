@@ -4,10 +4,14 @@ int leftOn, leftOff, rightOn, rightOff, rearOn, rearOff; //declare variables
 int leftDiff, rightDiff, rearDiff; //more variables
 
 int frontAvg, rearAvg;
-#define REMOTE_NUM 9
+#define REMOTE_NUM 4 //yellow bug listening for 4 
+//#define REMOTE_NUM 9 //red bug listening for 9 
 #define SRC  0x00
 #define DST  0xFF
 byte msg[] = {0x68,0x97};
+byte code[] = {0x00,0xff,0x30,0xcf}; //yellow bug sends 1 
+//byte code[] = {0x00,0xff,0x68,0x97};  //red bug sends 0
+
 void setup()
 {
   //HardwareBegin(); //initialize Ringo’s circuitry
@@ -151,7 +155,7 @@ int moveForward()
 int edge_detected = 0;
 char edge;
 bool detect_flag = false;
-
+bool done = false;
 void loop()
 {
 
@@ -159,6 +163,7 @@ void loop()
   restart:
     byte button;
 
+  //if(done || IsIRDone())  //wait for an IR remote control command to be received
   if(IsIRDone())  //wait for an IR remote control command to be received
   {                   
       button = GetIRButton();       // read which button was pressed, store in "button" variable
@@ -186,6 +191,7 @@ void loop()
          break;
         }
        }
+       done =false;
   }
   /*
   edge = LookForEdge();
@@ -206,35 +212,66 @@ void loop()
    
     if(edge_detected == 1) //left sensor detected back - mover right motor
     {
-        Serial.print("Left Detected Black, Move Right motor");
-        Motors(0,30);
+        Serial.println("Left Detected Black, Move Right motor");
+        //Motors(0,30);
         delay(300);
-        Motors(30,32.5);
-        //PlayChirp(0,0);
-        //SendIRMsg(SRC, DST, msg,2);
-        //delay(1000);
-        //edge_detected = 0;
+  
     }
     else if(edge_detected == 2)
     {
-      Serial.print("Right Detected Black, Move Left motor");
-      Motors(30,0);
+      Serial.println("Right Detected Black, Move Left motor");
+      //Motors(30,0);
       delay(300);
-      Motors(30,32.5);  
     }
     else if(edge_detected == 3)
     {
-      Serial.print("Continue moving - following the line!");
-      Motors(30,32.5);
-      //delay(300);
-      //Motors(0,0);
+      Serial.println("Continue moving - following the line!");
+      //Motors(30,32.5);
+      
     }
     else if(edge_detected == 4)
     {
-      Serial.print("Stop! Reached the end!");
-      Motors(0,0);
+      Serial.println("Stop! Both detected black!");
+      delay(400);//so that it moves a bit ahead of the black line
+      //Motors(0,0);
       detect_flag = false;
-      //delay(2000);
+      done = false; // just to make sure it was set correctly 
+      /*
+      while(!done)
+      {
+        TxIR(code, sizeof(code));
+        RxIRRestart(sizeof(code));
+        if(IsIRDone()){
+          done = true;
+          RxIRRestart(4); 
+        }
+        delay(100);
+      }*/
+       Serial.println("Sending Code BEFORE... ");
+
+      int i=0;
+      while(i<10)
+      {
+        Serial.print(i);
+        Serial.println("  Sending Code ... ");
+        
+
+        TxIR(code, sizeof(code));
+        RxIRRestart(sizeof(code));
+      //  Serial.print("Sending Code ... ");
+        
+        if(IsIRDone()){
+          Serial.println("Recieved Signal!! ");
+          done = true;
+          i==10;
+          RxIRRestart(4); 
+        }
+        delay(500);
+        i++;
+      }
+      
+      
+        //delay(2000);
       //Motors(0,0);
     }
   }
