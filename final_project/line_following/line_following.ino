@@ -162,9 +162,9 @@ void loop()
   
   restart:
     byte button;
+  //if(IsIRDone())  //wait for an IR remote control command to be received
 
-  //if(done || IsIRDone())  //wait for an IR remote control command to be received
-  if(IsIRDone())  //wait for an IR remote control command to be received
+  if(done || IsIRDone())  //wait for an IR remote control command to be received
   {                   
       button = GetIRButton();       // read which button was pressed, store in "button" variable
      
@@ -253,21 +253,22 @@ void loop()
       while(i<10)
       {
         Serial.print(i);
-        Serial.println("  Sending Code ... ");
-        
-
+        //Serial.println("  Sending Code ... ");
+       
         TxIR(code, sizeof(code));
         RxIRRestart(sizeof(code));
-      //  Serial.print("Sending Code ... ");
-        
+        Serial.println("Sending Code ... ");
+        delay(500);
+
         if(IsIRDone()){
           Serial.println("Recieved Signal!! ");
           done = true;
-          i==10;
-          RxIRRestart(4); 
+          i=10;
         }
         delay(500);
         i++;
+        RxIRRestart(sizeof(code)); 
+
       }
       
       
