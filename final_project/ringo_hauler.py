@@ -81,14 +81,14 @@ class Worker(Ricart_Agrawala):
         """
         critical section for ringo hauling
         """
-        print('{} has permission to operate crane, hold button while in use')
+        print('{} has permission to operate crane, hold button while in use'.format(self.uid))
 
         while not is_button_on(True):
             pass
-        print('{} is operating crane')
+        print('{} is operating crane'.format(self.uid))
         while is_button_on(False):
             pass
-        print('{} has finished loading')
+        print('{} has finished loading'.format(self.uid))
 
 
     def haul_load(self):
