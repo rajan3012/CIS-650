@@ -55,10 +55,7 @@ class Worker(Ricart_Agrawala):
         if dst_uid != self.uid:
             return
         if msg_type == Msg.task:
-            self.request_sent = False
             self.process_task(payload)
-            self.send_result(payload)
-            self.request_task()
         elif msg_type == Msg.stop:
             pass
         else:
@@ -67,7 +64,7 @@ class Worker(Ricart_Agrawala):
     def process_task(self, payload):
         self.my_task = Task.from_payload(payload)
         print('{} received task {} to haul {} units'.format(self.uid, self.my_task.uid, self.my_task.units))
-        print('{} is requesting crane')
+        print('{} is requesting crane'.format(self.uid))
         self.get_resource(self.haul_load)
 
     def send_result(self, task):
