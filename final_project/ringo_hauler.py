@@ -65,7 +65,7 @@ class Worker(Ricart_Agrawala):
         self.my_task = Task.from_payload(payload)
         print('{} received task {} to haul {} units'.format(self.uid, self.my_task.uid, self.my_task.units))
         print('{} is requesting crane'.format(self.uid))
-        self.get_resource(self.haul_load)
+        self.get_resource(self.load_ringo)
 
     def send_result(self, task):
         payload = str(task)
