@@ -104,14 +104,14 @@ class Worker(Ricart_Agrawala):
 
         while not receive_ringo(self.ringo_done):
             interruptable_sleep(2)
-
+        signal_ringo(self.ringo_ack)
         print('{} is unloading at destination'.format(self.uid))
         interruptable_sleep(10)
         signal_ringo(self.ringo_go)
 
         while not receive_ringo(self.ringo_done):
             interruptable_sleep(2)
-
+        signal_ringo(self.ringo_ack)
         self.my_task.result = randint(0, self.my_task.units)
         self.send_result(self.my_task)
         self.my_task = None
