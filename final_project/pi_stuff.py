@@ -16,6 +16,13 @@ PI_GO = 0
 PI_DONE = 1
 PI_ACK = 2
 
+"""
+bit ordering for expected key code from ringo
+              msb -- lsb
+KEY_0: 0x00ff6897 -- 0x00ff16d9
+KEY_1: 0x00ff30cf -- 0x00ff0cf3
+KEY_2: 0x00ff18e7 -- 0x00ff817e
+"""
 RINGO_CODES = [ None,
                 ["KEY_9", bytearray([0x00,0xff,0x68,0x97]), "KEY_7"],
                 ["KEY_4", bytearray([0x00,0xff,0x30,0xcf]), "KEY_5"],
@@ -34,11 +41,6 @@ garbage = 20000
 
 # Total number of bytes to receive
 NUM_BYTES_RCV = 4
-
-#Codes to listen for and send
-GO_CODE = 'KEY_5'
-STOPPED_CODE = bytearray([0x00,0xff,0x68,0x97])
-
 
 def receive_ringo(byte_code):
 
@@ -86,14 +88,6 @@ def durToByte(duration):
     dct["garbage"] = abs(garbage- duration)
     return min(dct, key=dct.get)
 
-def process_code(codes, distance):
-    print("Received codes: {}".format(hexlify(codes)))
-    print("expected codes: {}".format(hexlify(STOPPED_CODE)))
-    if codes == STOPPED_CODE:
-        signal_ringo(GO_CODE)
-        return distance
-    return 0
-
 def init_mode2():
     p = Popen(["sudo", "killall", "mode2"])
     p.wait()
@@ -135,8 +129,9 @@ def ir_receive():
 
         # space and duration = 2
         if len(binary) == 2:
-            message = str(int(binary, 2)) + message
-            #message = message + str(int(binary,2))
+            # select bit order here, remote and pi differ
+            #message = str(int(binary, 2)) + message
+            message = message + str(int(binary,2))
             binary = ''
 
         # 1 byte = 8 bits
@@ -146,14 +141,13 @@ def ir_receive():
             else:
                 on_led()
                 codes.append(int(message, 2))
-                #print message, hexlify(codes), count +1
                 count += 1
                 message = ''
                 off_led()
             if count == 4:
                 break
 
-    print('received {} from rigno'.format(hexlify(codes)))
+    print('received {}'.format(hexlify(codes)))
     reset_lirc(p)
     return codes
 
