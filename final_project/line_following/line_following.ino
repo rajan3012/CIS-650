@@ -14,14 +14,14 @@ byte code[] = {0x00,0xff,0x30,0xcf}; //yellow bug sends 1
 
 void setup()
 {
-  //HardwareBegin(); //initialize Ringo’s circuitry
+  HardwareBegin(); //initialize Ringo’s circuitry
   PlayStartChirp(); //play startup chirp and blink eyes
   
   RxIRRestart(4);         //wait for 4 byte IR remote command
   IsIRDone();
   GetIRButton();
   RestartTimer();
-  Serial.begin(9600);
+  //Serial.begin(9600);
   //OnEyes(0,0,200); //blue to start
 }
 
@@ -167,7 +167,7 @@ void loop()
   if(done || IsIRDone())  //wait for an IR remote control command to be received
   {                   
       button = GetIRButton();       // read which button was pressed, store in "button" variable
-     
+      RxIRRestart(4);               // reset once after read.
       if(button){                   // if "button" is not zero...
         switch (button){            // activate a behavior based on which button was pressed
 
@@ -178,8 +178,7 @@ void loop()
          //edge_detected = 0;
          //moveForward();
          detect_flag = true;
-         RxIRRestart(4);            // restart wait for 4 byte IR remote command
-         break;
+          break;
 
          default:                   // if no match, break out and wait for a new code
          PlayNonAck();              // quick "NonAck" chirp to know a known button was received, but not understood as a valid command
@@ -187,8 +186,7 @@ void loop()
          SwitchMotorsToSerial();
          Serial.print("button: ");
          Serial.println(button);  // send button number pressed to serial window
-         RxIRRestart(4);            //wait for 4 byte IR remote command
-         break;
+          break;
         }
        }
        done =false;
