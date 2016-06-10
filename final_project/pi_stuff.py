@@ -64,7 +64,7 @@ def is_switch_on():
 def signal_ringo(remote_code):
     # SEND_START, SEND_STOP, SEND_ONCE)
     print("Signaling ringo .")
-    for i in range(5):
+    for i in range(2):
         on_led()
         Popen(("irsend", "SEND_ONCE", "Ringo", remote_code))
         interruptable_sleep(1)
