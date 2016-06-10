@@ -107,6 +107,14 @@ class Worker(Ricart_Agrawala):
         signal_ringo(self.ringo_ack)
         print('{} is unloading at destination'.format(self.uid))
         interruptable_sleep(10)
+
+
+        # reposition ringo
+        print('press and release button after unloading ringo')
+        while not is_button_on(True):
+            pass
+        while is_button_on(False):
+            pass
         signal_ringo(self.ringo_go)
 
         while not receive_ringo(self.ringo_done):
