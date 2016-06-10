@@ -23,6 +23,7 @@ KEY_0: 0x00ff6897 -- 0x00ff16d9
 KEY_1: 0x00ff30cf -- 0x00ff0cf3
 KEY_2: 0x00ff18e7 -- 0x00ff817e
 """
+
 RINGO_CODES = [ None,
                 ["KEY_9", bytearray([0x00,0xff,0x68,0x97]), "KEY_7"],
                 ["KEY_4", bytearray([0x00,0xff,0x30,0xcf]), "KEY_5"],
