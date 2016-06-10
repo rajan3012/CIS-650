@@ -153,6 +153,7 @@ def ir_receive():
             if count == 4:
                 break
 
+    print('received {} from rigno'.format(hexlify(codes)))
     reset_lirc(p)
     return codes
 
